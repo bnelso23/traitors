@@ -27,7 +27,8 @@ const defaultState = {
     { id: 'p11', name: 'Sarah', pin: '1011', role: 'UNKNOWN', status: 'ALIVE' },
     { id: 'p12', name: 'Derek', pin: '1012', role: 'UNKNOWN', status: 'ALIVE' }
   ],
-  messages: [] // Array of { id, senderId, senderName, channelId, text, timestamp }
+  messages: [], // Array of { id, senderId, senderName, channelId, text, timestamp }
+  groups: [] // Array of { id, name, memberIds, creatorId }
 };
 
 let localState = { ...defaultState };

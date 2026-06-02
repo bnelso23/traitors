@@ -167,12 +167,20 @@ function getFilteredState(userId) {
       const parts = msg.channelId.split('-');
       return parts.includes(userId);
     }
+    if (msg.channelId.startsWith('group_')) {
+      const gp = (state.groups || []).find(g => g.id === msg.channelId);
+      return gp && gp.memberIds.includes(userId);
+    }
     return false;
   });
 
   // Filter votes: players can see IF they voted, but not who others voted for, until voting is finalized
   const clientVoted = state.votes[userId] ? true : false;
   const votesCount = Object.keys(state.votes).length;
+
+  const filteredGroups = userId === 'gm' 
+    ? (state.groups || []) 
+    : (state.groups || []).filter(g => g.memberIds.includes(userId));
 
   return {
     roomCode: state.roomCode,
@@ -187,6 +195,7 @@ function getFilteredState(userId) {
     clientVoted: clientVoted,
     players: filteredPlayers,
     messages: filteredMessages,
+    groups: filteredGroups,
     clientPlayer: {
       id: clientPlayer.id,
       name: clientPlayer.name,
@@ -256,6 +265,10 @@ io.on('connection', (socket) => {
         if (!state.chatsEnabled) return;
         if (channelId === 'traitors' && (!state.traitorsChatEnabled || player.role !== 'TRAITOR')) return;
         if (channelId.startsWith('private-') && !state.privateChatsEnabled) return;
+        if (channelId.startsWith('group_')) {
+          const gp = (state.groups || []).find(g => g.id === channelId);
+          if (!gp || !gp.memberIds.includes(socket.userId)) return;
+        }
       }
     }
 
@@ -312,6 +325,20 @@ io.on('connection', (socket) => {
           });
         }
       });
+    } else if (channelId.startsWith('group_')) {
+      const gp = (state.groups || []).find(g => g.id === channelId);
+      if (gp) {
+        gp.memberIds.forEach(memberId => {
+          if (memberId !== socket.userId) {
+            notifier.sendPushNotification(memberId, {
+              title: `${gp.name} - ${senderName}`,
+              body: text,
+              tag: `chat-group-${channelId}`,
+              data: { channelId }
+            });
+          }
+        });
+      }
     }
   });
 
@@ -685,6 +712,60 @@ io.on('connection', (socket) => {
       voterId: socket.userId,
       voterName: voter.name,
       votesCount: Object.keys(state.votes).length
+    });
+  });
+
+  // Create dynamic custom player group/alliance
+  socket.on('createGroup', async ({ name, memberIds }) => {
+    if (!socket.userId || socket.userId === 'gm') return;
+    const state = getState();
+
+    const creator = state.players.find(p => p.id === socket.userId);
+    if (!creator || creator.status === 'DEAD') return;
+
+    // Filter alive players and sanitize member IDs
+    const sanitizedMembers = memberIds.filter(id => {
+      const p = state.players.find(pl => pl.id === id);
+      return p && p.status === 'ALIVE';
+    });
+
+    if (!sanitizedMembers.includes(socket.userId)) {
+      sanitizedMembers.push(socket.userId);
+    }
+
+    if (sanitizedMembers.length < 2) return;
+
+    const groupId = 'group_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    const newGroup = {
+      id: groupId,
+      name: name.trim().substr(0, 30) || `Alliance #${Date.now().toString().slice(-4)}`,
+      memberIds: sanitizedMembers,
+      creatorId: socket.userId
+    };
+
+    if (!state.groups) state.groups = [];
+    state.groups.push(newGroup);
+
+    state.messages.push({
+      id: 'alert_' + Date.now(),
+      senderId: 'gm',
+      senderName: 'Game Master',
+      channelId: groupId,
+      text: `🕊️ Alliance created: "${newGroup.name}" containing ${newGroup.memberIds.length} players. Conversations are private.`,
+      timestamp: new Date().toISOString()
+    });
+
+    await saveState();
+    broadcastState();
+
+    sanitizedMembers.forEach(memberId => {
+      if (memberId !== socket.userId) {
+        notifier.sendPushNotification(memberId, {
+          title: 'Secret Alliance Formed',
+          body: `You have been added to: "${newGroup.name}" by ${creator.name}.`,
+          tag: `chat-group-created-${groupId}`
+        });
+      }
     });
   });
 

@@ -399,6 +399,23 @@ function GMDashboard({ gameState, emitSocket }) {
                   );
                 })}
               </select>
+
+              {/* Alliance/Group Chats dropdown */}
+              <select
+                value={monitorChannel.startsWith('group_') ? monitorChannel : ''}
+                onChange={(e) => setMonitorChannel(e.target.value)}
+                className="gothic-input"
+                style={{ padding: '4px 8px', fontSize: '0.65rem', width: '140px', height: '28px', borderBottom: 'none', background: 'var(--bg-tertiary)', border: 'var(--border-dark)', flexShrink: 0 }}
+              >
+                <option value="">— Alliances ({
+                  (gameState.groups || []).length
+                }) —</option>
+                {(gameState.groups || []).map(g => (
+                  <option key={g.id} value={g.id}>
+                    {g.name} ({g.memberIds.length})
+                  </option>
+                ))}
+              </select>
             </div>
 
             {/* Chat Stream Window */}
@@ -407,7 +424,7 @@ function GMDashboard({ gameState, emitSocket }) {
                 {gameState.messages.filter(msg => msg.channelId === monitorChannel).length === 0 ? (
                   <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.3, flexDirection: 'column', height: '100%' }}>
                     <MessageSquare size={20} style={{ marginBottom: '6px' }} />
-                    <span style={{ fontSize: '0.7rem' }}>No whispers recorded.</span>
+                    <span style={{ fontSize: '0.7rem' }}>No letters recorded.</span>
                   </div>
                 ) : (
                   gameState.messages
@@ -443,7 +460,8 @@ function GMDashboard({ gameState, emitSocket }) {
                   placeholder={`Speak in ${
                     monitorChannel === 'global' ? 'Lounge' :
                     monitorChannel === 'traitors' ? 'Den' :
-                    monitorChannel === 'graveyard' ? 'Graveyard' : 'Whisper'
+                    monitorChannel === 'graveyard' ? 'Graveyard' :
+                    monitorChannel.startsWith('group_') ? `Alliance (${(gameState.groups || []).find(g => g.id === monitorChannel)?.name || 'Custom Group'})` : 'Whisper'
                   }...`}
                   className="gothic-input"
                   style={{ padding: '6px 10px', fontSize: '0.8rem', flex: 1, borderBottom: 'none' }}

@@ -8,6 +8,11 @@ function PlayerDashboard({ gameState, emitSocket, initialTab = 'dashboard', onNa
   const [chatText, setChatText] = useState('');
   const [votedPlayerId, setVotedPlayerId] = useState(null);
   
+  // Group creation state
+  const [showCreateGroupModal, setShowCreateGroupModal] = useState(false);
+  const [newGroupName, setNewGroupName] = useState('');
+  const [selectedGroupMembers, setSelectedGroupMembers] = useState([]);
+  
   const messagesEndRef = useRef(null);
 
   // Sync tab when prop changes
@@ -174,7 +179,7 @@ function PlayerDashboard({ gameState, emitSocket, initialTab = 'dashboard', onNa
         <div style={{ display: 'flex', flexDirection: 'column', height: '100%', flex: 1, padding: '12px' }}>
           
           {/* Channel Select Slider */}
-          <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '10px', scrollbarWidth: 'none' }}>
+          <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '10px', scrollbarWidth: 'none', alignItems: 'center' }}>
             
             {/* Lounge Tab */}
             {isAlive && (
@@ -209,6 +214,18 @@ function PlayerDashboard({ gameState, emitSocket, initialTab = 'dashboard', onNa
               </button>
             )}
 
+            {/* Alliance Group Tabs */}
+            {(gameState.groups || []).map(group => (
+              <button
+                key={group.id}
+                onClick={() => { setSelectedPmPlayer(null); setActiveChannel(group.id); }}
+                className={`gothic-btn-muted ${activeChannel === group.id ? 'text-gold' : ''}`}
+                style={{ padding: '8px 12px', fontSize: '0.7rem', flexShrink: 0, borderRadius: '4px', border: activeChannel === group.id ? '1px solid var(--gold)' : 'var(--border-dark)' }}
+              >
+                🛡️ {group.name}
+              </button>
+            ))}
+
             {/* Selected PM Target Tab */}
             {selectedPmPlayer && (
               <button 
@@ -217,6 +234,63 @@ function PlayerDashboard({ gameState, emitSocket, initialTab = 'dashboard', onNa
               >
                 ✉️ {selectedPmPlayer.name}
               </button>
+            )}
+
+            {/* Form Alliance Action button */}
+            {isAlive && (
+              <button 
+                onClick={() => {
+                  setNewGroupName('');
+                  setSelectedGroupMembers([]);
+                  setShowCreateGroupModal(true);
+                }}
+                className="gothic-btn-muted"
+                style={{ padding: '8px 12px', fontSize: '0.7rem', flexShrink: 0, borderRadius: '4px', border: '1px solid var(--gold)', color: 'var(--gold)' }}
+              >
+                + Form Alliance
+              </button>
+            )}
+
+            {/* Inline Whispering Dropdown */}
+            {isAlive && (
+              <select
+                value={selectedPmPlayer ? selectedPmPlayer.id : ""}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (!val) {
+                    setSelectedPmPlayer(null);
+                    setActiveChannel('global');
+                  } else {
+                    const p = gameState.players.find(pl => pl.id === val);
+                    if (p) {
+                      handleSelectPmPlayer(p);
+                    }
+                  }
+                }}
+                className="gothic-input"
+                style={{
+                  padding: '4px 8px',
+                  fontSize: '0.7rem',
+                  height: '32px',
+                  backgroundColor: 'rgba(20, 20, 20, 0.8)',
+                  color: 'var(--gold)',
+                  border: '1px solid var(--border-dark)',
+                  borderRadius: '4px',
+                  flexShrink: 0,
+                  width: 'auto',
+                  minWidth: '100px'
+                }}
+              >
+                <option value="">💬 Whisper...</option>
+                {gameState.players
+                  .filter(p => p.id !== clientPlayer.id && p.status === 'ALIVE')
+                  .map(p => (
+                    <option key={p.id} value={p.id}>
+                      {p.name}
+                    </option>
+                  ))
+                }
+              </select>
             )}
 
           </div>
@@ -231,6 +305,7 @@ function PlayerDashboard({ gameState, emitSocket, initialTab = 'dashboard', onNa
                 {activeChannel === 'traitors' && 'Traitors\' Den (Confidential)'}
                 {activeChannel === 'graveyard' && 'Graveyard Whispers'}
                 {activeChannel.startsWith('private-') && `Secret Letter to ${selectedPmPlayer?.name}`}
+                {activeChannel.startsWith('group_') && `Alliance: ${(gameState.groups || []).find(g => g.id === activeChannel)?.name || 'Custom Group'}`}
               </span>
               {activeChannel === 'traitors' && <Lock size={12} className="text-crimson" />}
             </div>
@@ -288,6 +363,17 @@ function PlayerDashboard({ gameState, emitSocket, initialTab = 'dashboard', onNa
               </div>
             )}
 
+            {/* Locked group chats overlay */}
+            {activeChannel.startsWith('group_') && gameState.chatsEnabled && !gameState.privateChatsEnabled && (
+              <div className="chat-lockout-overlay">
+                <Lock size={32} className="text-crimson" style={{ marginBottom: '10px' }} />
+                <h4 style={{ fontFamily: 'var(--font-serif)', color: 'var(--crimson-glow)', fontSize: '0.9rem', textTransform: 'uppercase' }}>Alliance Chats Silenced</h4>
+                <p style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
+                  Alliance channels have been locked by the Game Master.
+                </p>
+              </div>
+            )}
+
             {/* Input Bar */}
             <form onSubmit={handleSendChat} className="chat-input-bar">
               <input 
@@ -297,13 +383,13 @@ function PlayerDashboard({ gameState, emitSocket, initialTab = 'dashboard', onNa
                 placeholder="Write message..." 
                 className="gothic-input"
                 style={{ padding: '8px 12px', fontSize: '0.85rem', flex: 1, borderBottom: 'none' }}
-                disabled={activeChannel !== 'graveyard' && !gameState.chatsEnabled}
+                disabled={(activeChannel !== 'graveyard' && !gameState.chatsEnabled) || (activeChannel.startsWith('group_') && !gameState.privateChatsEnabled)}
               />
               <button 
                 type="submit" 
                 className="gothic-btn" 
                 style={{ padding: '8px 16px', fontSize: '0.75rem' }}
-                disabled={!chatText.trim() || (activeChannel !== 'graveyard' && !gameState.chatsEnabled)}
+                disabled={!chatText.trim() || (activeChannel !== 'graveyard' && !gameState.chatsEnabled) || (activeChannel.startsWith('group_') && !gameState.privateChatsEnabled)}
               >
                 Send
               </button>
@@ -371,7 +457,7 @@ function PlayerDashboard({ gameState, emitSocket, initialTab = 'dashboard', onNa
                   <h3 style={{ fontSize: '0.9rem', color: 'var(--gold)', marginBottom: '4px', textAlign: 'center' }}>
                     {gameState.votingType === 'EXILE' ? 'Roundtable Exile Vote' : 'Traitor Murder Ballot'}
                   </h3>
-                  <p style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textAlign: 'center', marginBottom: '15px' }}>
+                  <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', textAlign: 'center', marginBottom: '15px' }}>
                     {gameState.votingType === 'EXILE' 
                       ? 'Choose the player you wish to exile from the castle:' 
                       : 'Traitors, agree and choose a Faithful to assassinate:'
@@ -398,6 +484,130 @@ function PlayerDashboard({ gameState, emitSocket, initialTab = 'dashboard', onNa
             </div>
           )}
 
+        </div>
+      )}
+
+      {/* Alliance Creation Modal Overlay */}
+      {showCreateGroupModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.85)',
+          backdropFilter: 'blur(5px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+          padding: '20px'
+        }}>
+          <div 
+            className="gothic-panel candle-glow" 
+            style={{
+              width: '100%',
+              maxWidth: '400px',
+              maxHeight: '80vh',
+              overflowY: 'auto',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '16px',
+              margin: 0
+            }}
+          >
+            <h3 style={{ fontSize: '1rem', color: 'var(--gold)', textAlign: 'center', borderBottom: '1px solid rgba(197, 160, 40, 0.3)', paddingBottom: '8px' }}>
+              Form Secret Alliance
+            </h3>
+            
+            <div>
+              <label style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>Alliance Name</label>
+              <input 
+                type="text" 
+                className="gothic-input" 
+                placeholder="e.g. Faithful Pact"
+                value={newGroupName}
+                onChange={(e) => setNewGroupName(e.target.value)}
+                maxLength={30}
+              />
+            </div>
+            
+            <div>
+              <label style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '8px' }}>Invite Members (Must be Alive)</label>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '200px', overflowY: 'auto', paddingRight: '4px' }}>
+                {gameState.players
+                  .filter(p => p.id !== clientPlayer.id && p.status === 'ALIVE')
+                  .map(p => {
+                    const isChecked = selectedGroupMembers.includes(p.id);
+                    return (
+                      <div 
+                        key={p.id}
+                        onClick={() => {
+                          if (isChecked) {
+                            setSelectedGroupMembers(selectedGroupMembers.filter(id => id !== p.id));
+                          } else {
+                            setSelectedGroupMembers([...selectedGroupMembers, p.id]);
+                          }
+                        }}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '10px',
+                          padding: '8px 12px',
+                          background: isChecked ? 'rgba(197, 160, 40, 0.08)' : 'rgba(255, 255, 255, 0.02)',
+                          border: isChecked ? '1px solid var(--gold)' : '1px solid rgba(255, 255, 255, 0.08)',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          transition: 'var(--transition-fast)'
+                        }}
+                      >
+                        <div style={{
+                          width: '16px',
+                          height: '16px',
+                          border: '1px solid var(--gold)',
+                          borderRadius: '3px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          background: isChecked ? 'var(--gold-dark)' : 'transparent'
+                        }}>
+                          {isChecked && <Check size={12} className="text-gold-glow" />}
+                        </div>
+                        <span style={{ fontSize: '0.85rem', color: isChecked ? 'var(--text-primary)' : 'var(--text-secondary)' }}>{p.name}</span>
+                      </div>
+                    );
+                  })
+                }
+              </div>
+            </div>
+            
+            <div style={{ display: 'flex', gap: '10px', marginTop: '8px' }}>
+              <button 
+                className="gothic-btn-muted" 
+                style={{ flex: 1, padding: '10px', fontSize: '0.8rem' }}
+                onClick={() => {
+                  setShowCreateGroupModal(false);
+                  setNewGroupName('');
+                  setSelectedGroupMembers([]);
+                }}
+              >
+                Cancel
+              </button>
+              <button 
+                className="gothic-btn" 
+                style={{ flex: 1, padding: '10px', fontSize: '0.8rem' }}
+                disabled={!newGroupName.trim() || selectedGroupMembers.length === 0}
+                onClick={() => {
+                  emitSocket('createGroup', {
+                    name: newGroupName,
+                    memberIds: selectedGroupMembers
+                  });
+                  setShowCreateGroupModal(false);
+                  setNewGroupName('');
+                  setSelectedGroupMembers([]);
+                }}
+              >
+                Seal Pact
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
