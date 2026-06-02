@@ -1,0 +1,18 @@
+{
+  "name": "traitors-companion-app",
+  "version": "1.0.0",
+  "description": "Real-time companion app for the Traitors party game.",
+  "main": "server/server.js",
+  "scripts": {
+    "start": "node server/server.js",
+    "server": "node server/server.js",
+    "client": "npm run dev --prefix client",
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "build": "npm run build --prefix client",
+    "install-all": "npm install && npm install --prefix client && npm install --prefix server"
+  },
+  "dependencies": {
+    "concurrently": "^8.2.2",
+    "dotenv": "^16.4.5"
+  }
+}

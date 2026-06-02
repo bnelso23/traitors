@@ -1,0 +1,13 @@
+{
+  "name": "traitors-server",
+  "version": "1.0.0",
+  "private": true,
+  "main": "server.js",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "pg": "^8.11.5",
+    "socket.io": "^4.7.5",
+    "web-push": "^3.6.7"
+  }
+}
