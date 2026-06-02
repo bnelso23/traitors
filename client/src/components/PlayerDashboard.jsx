@@ -116,7 +116,7 @@ function PlayerDashboard({ gameState, emitSocket, initialTab = 'dashboard', onNa
           </div>
 
           {/* Web Push Notification status */}
-          {Notification.permission !== 'granted' && (
+          {typeof window.Notification !== 'undefined' && window.Notification.permission !== 'granted' && (
             <div className="gothic-panel" style={{ borderTopColor: 'var(--gold)', display: 'flex', alignItems: 'center', gap: '12px', padding: '12px' }}>
               <Volume2 className="text-gold" size={24} style={{ flexShrink: 0 }} />
               <div style={{ flex: 1 }}>

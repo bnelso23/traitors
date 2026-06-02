@@ -1,28 +1,57 @@
 const webpush = require('web-push');
 
-let vapidKeys;
-if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
-  vapidKeys = {
-    publicKey: process.env.VAPID_PUBLIC_KEY,
-    privateKey: process.env.VAPID_PRIVATE_KEY
-  };
-} else {
-  // Generate them dynamically if not provided, and print to logs so user can copy them.
-  console.log("VAPID keys not set in environment. Generating temporary ones for this session...");
-  vapidKeys = webpush.generateVAPIDKeys();
-  console.log("=========================================");
-  console.log("TEMPORARY VAPID KEYS GENERATED:");
-  console.log("Public Key:", vapidKeys.publicKey);
-  console.log("Private Key:", vapidKeys.privateKey);
-  console.log("Add these to your environment variables on Railway to persist push subscriptions!");
-  console.log("=========================================");
+const cleanKey = (key) => {
+  if (!key) return '';
+  return key.trim().replace(/^['"]|['"]$/g, '').trim();
+};
+
+let vapidKeys = null;
+let keysLoadedSuccessfully = false;
+
+const envPublicKey = cleanKey(process.env.VAPID_PUBLIC_KEY);
+const envPrivateKey = cleanKey(process.env.VAPID_PRIVATE_KEY);
+
+if (envPublicKey && envPrivateKey) {
+  try {
+    webpush.setVapidDetails(
+      'mailto:traitors-birthday-game@example.com',
+      envPublicKey,
+      envPrivateKey
+    );
+    vapidKeys = {
+      publicKey: envPublicKey,
+      privateKey: envPrivateKey
+    };
+    keysLoadedSuccessfully = true;
+    console.log("VAPID Keys loaded successfully from environment variables.");
+  } catch (err) {
+    console.error("=========================================");
+    console.error("CRITICAL WARNING: The VAPID Keys in your environment variables are INVALID!");
+    console.error("Error details:", err.message);
+    console.error("Falling back to generating temporary VAPID keys to prevent server crash.");
+    console.error("=========================================");
+  }
 }
 
-webpush.setVapidDetails(
-  'mailto:traitors-birthday-game@example.com',
-  vapidKeys.publicKey,
-  vapidKeys.privateKey
-);
+if (!keysLoadedSuccessfully) {
+  console.log("Generating temporary VAPID keys for this session...");
+  vapidKeys = webpush.generateVAPIDKeys();
+  try {
+    webpush.setVapidDetails(
+      'mailto:traitors-birthday-game@example.com',
+      vapidKeys.publicKey,
+      vapidKeys.privateKey
+    );
+    console.log("=========================================");
+    console.log("TEMPORARY VAPID KEYS GENERATED:");
+    console.log("Public Key:", vapidKeys.publicKey);
+    console.log("Private Key:", vapidKeys.privateKey);
+    console.log("Please copy these and add them to Railway variables to persist push alerts!");
+    console.log("=========================================");
+  } catch (err) {
+    console.error("Failed to initialize VAPID details with temporary keys:", err);
+  }
+}
 
 // We will store push subscriptions in memory
 const subscriptions = {}; // playerId -> array of subscription objects
