@@ -95,6 +95,7 @@ function App() {
   const [gameState, setGameState] = useState(null);
   const [activeTab, setActiveTab] = useState('dashboard'); // dashboard, chat, voting
   const [toast, setToast] = useState(null);
+  const [unreadAlerts, setUnreadAlerts] = useState(false);
   const socketRef = useRef(null);
 
   // Setup WebSocket connection
@@ -175,6 +176,30 @@ function App() {
       navigator.serviceWorker?.removeEventListener('message', handleSWMessage);
     };
   }, [user]);
+
+  // Track unread alerts targeting the player
+  useEffect(() => {
+    if (!gameState || !user || activeTab === 'dashboard') {
+      if (activeTab === 'dashboard') {
+        setUnreadAlerts(false);
+      }
+      return;
+    }
+    
+    const currentAlerts = gameState.messages.filter(msg => msg.channelId === 'gm-alerts');
+    const savedCount = parseInt(localStorage.getItem(`last_seen_alerts_${user.id}`) || '0', 10);
+    if (currentAlerts.length > savedCount) {
+      setUnreadAlerts(true);
+    }
+  }, [gameState?.messages, activeTab, user?.id]);
+
+  useEffect(() => {
+    if (activeTab === 'dashboard' && gameState && user) {
+      const currentAlerts = gameState.messages.filter(msg => msg.channelId === 'gm-alerts');
+      localStorage.setItem(`last_seen_alerts_${user.id}`, currentAlerts.length.toString());
+      setUnreadAlerts(false);
+    }
+  }, [activeTab, gameState?.messages, user]);
 
   const showToast = (message) => {
     setToast(message);
@@ -341,9 +366,23 @@ function App() {
           <button 
             className={`footer-tab ${activeTab === 'dashboard' ? 'active' : ''}`}
             onClick={() => setActiveTab('dashboard')}
+            style={{ position: 'relative' }}
           >
             <Shield size={18} style={{ marginBottom: '4px' }} />
             Dashboard
+            {unreadAlerts && (
+              <span style={{
+                position: 'absolute',
+                top: '8px',
+                right: '25%',
+                width: '8px',
+                height: '8px',
+                backgroundColor: 'var(--crimson-glow)',
+                borderRadius: '50%',
+                boxShadow: '0 0 8px var(--crimson-glow)',
+                animation: 'flicker 2s infinite alternate ease-in-out'
+              }} />
+            )}
           </button>
           <button 
             className={`footer-tab ${activeTab === 'chat' ? 'active' : ''}`}

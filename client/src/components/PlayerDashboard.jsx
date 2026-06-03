@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Shield, MessageSquare, Award, Volume2, Key, HelpCircle, User, Users, Lock, ChevronRight, Check } from 'lucide-react';
+import { Shield, MessageSquare, Award, Volume2, Key, HelpCircle, User, Users, Lock, ChevronRight, Check, Bell } from 'lucide-react';
 
 function PlayerDashboard({ gameState, emitSocket, initialTab = 'dashboard', onNavigateChat }) {
   const [tab, setTab] = useState(initialTab);
@@ -130,6 +130,46 @@ function PlayerDashboard({ gameState, emitSocket, initialTab = 'dashboard', onNa
               </div>
             </div>
           )}
+
+          {/* GM DECREES / ALERTS */}
+          <div className="gothic-panel" style={{ borderTopColor: 'var(--crimson-glow)' }}>
+            <h3 style={{ fontSize: '0.85rem', color: 'var(--crimson-glow)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Bell size={14} className="text-crimson" /> Decrees of the Game Master
+            </h3>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '180px', overflowY: 'auto' }}>
+              {gameState.messages.filter(msg => msg.channelId === 'gm-alerts').length === 0 ? (
+                <div style={{ padding: '12px 0', textAlign: 'center', fontSize: '0.75rem', color: 'var(--text-secondary)', fontStyle: 'italic' }}>
+                  No decrees have been issued from the tower.
+                </div>
+              ) : (
+                gameState.messages
+                  .filter(msg => msg.channelId === 'gm-alerts')
+                  .slice().reverse() // Show newest first
+                  .map(msg => (
+                    <div 
+                      key={msg.id}
+                      style={{
+                        padding: '10px 12px',
+                        background: 'rgba(138, 19, 19, 0.05)',
+                        borderLeft: '3px solid var(--crimson)',
+                        borderTop: 'var(--border-dark)',
+                        borderRight: 'var(--border-dark)',
+                        borderBottom: 'var(--border-dark)',
+                        borderRadius: '0 4px 4px 0',
+                        fontSize: '0.8rem',
+                        lineHeight: '1.4'
+                      }}
+                    >
+                      <div style={{ color: 'var(--text-primary)', fontWeight: '500' }}>{msg.text}</div>
+                      <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', marginTop: '4px', textAlign: 'right' }}>
+                        {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </div>
+                    </div>
+                  ))
+              )}
+            </div>
+          </div>
 
           {/* ACTIVE PLAYERS DIRECTORY */}
           <div className="gothic-panel">
