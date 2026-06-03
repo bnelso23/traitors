@@ -43,6 +43,12 @@ app.use((req, res, next) => {
   next();
 });
 
+// Serve sw.js with no-cache headers to ensure immediate PWA updates
+app.get('/sw.js', (req, res) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+  res.sendFile(path.join(__dirname, '../client/dist/sw.js'));
+});
+
 // Serve static client build files in production
 app.use(express.static(path.join(__dirname, '../client/dist')));
 

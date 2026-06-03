@@ -108,6 +108,33 @@ function App() {
     return localStorage.getItem('traitors_sounds_enabled') !== 'false';
   });
 
+  // Setup PWA Service Worker & Auto Update detection on boot
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').then((registration) => {
+        console.log('PWA Service Worker registered successfully.');
+        
+        // Periodically poll for updates (every 60 seconds)
+        const updateInterval = setInterval(() => {
+          registration.update();
+        }, 60000);
+
+        return () => clearInterval(updateInterval);
+      }).catch((err) => {
+        console.error('PWA Service Worker registration failed:', err);
+      });
+
+      // Reload client window when new Service Worker takes over
+      const handleControllerChange = () => {
+        window.location.reload();
+      };
+      navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange);
+      return () => {
+        navigator.serviceWorker.removeEventListener('controllerchange', handleControllerChange);
+      };
+    }
+  }, []);
+
   // Setup WebSocket connection
   useEffect(() => {
     if (!user) {
@@ -267,7 +294,7 @@ function App() {
     }
 
     try {
-      const registration = await navigator.serviceWorker.register('/sw.js');
+      const registration = await navigator.serviceWorker.ready;
       
       // Get VAPID public key
       const keyRes = await fetch('/api/vapid-public-key');
