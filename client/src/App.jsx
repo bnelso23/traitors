@@ -4,11 +4,13 @@ import LoginScreen from './components/LoginScreen';
 import PlayerDashboard from './components/PlayerDashboard';
 import GMDashboard from './components/GMDashboard';
 import InstallPrompt from './components/InstallPrompt';
-import { Shield, MessageSquare, Award, LogOut, BellRing, User } from 'lucide-react';
+import { Shield, MessageSquare, Award, LogOut, BellRing, User, Settings } from 'lucide-react';
 
 // Synthesize gothic sounds using browser Web Audio API
 export const playSound = (type) => {
   try {
+    const soundsEnabled = localStorage.getItem('traitors_sounds_enabled') !== 'false';
+    if (!soundsEnabled) return;
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     
     if (type === 'alert') {
@@ -97,6 +99,14 @@ function App() {
   const [toast, setToast] = useState(null);
   const [unreadAlerts, setUnreadAlerts] = useState(false);
   const socketRef = useRef(null);
+  
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [pushEnabled, setPushEnabled] = useState(() => {
+    return localStorage.getItem('traitors_push_enabled') !== 'false';
+  });
+  const [soundsEnabled, setSoundsEnabled] = useState(() => {
+    return localStorage.getItem('traitors_sounds_enabled') !== 'false';
+  });
 
   // Setup WebSocket connection
   useEffect(() => {
@@ -167,8 +177,10 @@ function App() {
     };
     navigator.serviceWorker?.addEventListener('message', handleSWMessage);
 
-    // Register PWA service worker and push notifications
-    registerPush(user);
+    // Register PWA service worker and push notifications if enabled
+    if (localStorage.getItem('traitors_push_enabled') !== 'false') {
+      registerPush(user);
+    }
 
     return () => {
       socket.disconnect();
@@ -204,6 +216,48 @@ function App() {
   const showToast = (message) => {
     setToast(message);
     setTimeout(() => setToast(null), 5000);
+  };
+
+  const togglePush = async (enable) => {
+    if (!enable) {
+      if ('serviceWorker' in navigator) {
+        try {
+          const registration = await navigator.serviceWorker.ready;
+          const subscription = await registration.pushManager.getSubscription();
+          if (subscription) {
+            await subscription.unsubscribe();
+            await fetch('/api/unsubscribe', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                playerId: user.id,
+                endpoint: subscription.endpoint
+              })
+            });
+          }
+        } catch (err) {
+          console.warn('Failed to unsubscribe:', err);
+        }
+      }
+      localStorage.setItem('traitors_push_enabled', 'false');
+      setPushEnabled(false);
+      showToast('Push notifications silenced.');
+    } else {
+      localStorage.setItem('traitors_push_enabled', 'true');
+      setPushEnabled(true);
+      if (user) {
+        await registerPush(user);
+        showToast('Push notifications enabled.');
+      }
+    }
+  };
+
+  const toggleSounds = (enable) => {
+    localStorage.setItem('traitors_sounds_enabled', enable ? 'true' : 'false');
+    setSoundsEnabled(enable);
+    if (enable) {
+      playSound('message');
+    }
   };
 
   const registerPush = async (userObj) => {
@@ -299,6 +353,13 @@ function App() {
                 </span>
               )}
             </div>
+            <button 
+              onClick={() => setShowSettingsModal(true)} 
+              style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '4px', marginRight: '4px' }}
+              title="Settings"
+            >
+              <Settings size={16} />
+            </button>
             <button 
               onClick={handleLogout} 
               style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '4px' }}
@@ -399,6 +460,128 @@ function App() {
             Roundtable
           </button>
         </footer>
+      )}
+
+      {/* User Settings Modal Overlay */}
+      {showSettingsModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.85)',
+          backdropFilter: 'blur(5px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+          padding: '20px'
+        }}>
+          <div 
+            className="gothic-panel candle-glow" 
+            style={{
+              width: '100%',
+              maxWidth: '400px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '16px',
+              margin: 0
+            }}
+          >
+            <h3 style={{ fontSize: '1rem', color: 'var(--gold)', textAlign: 'center', borderBottom: '1px solid rgba(197, 160, 40, 0.3)', paddingBottom: '8px' }}>
+              User Settings
+            </h3>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              {/* Sound toggle */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <span style={{ fontSize: '0.85rem', color: 'var(--text-primary)', display: 'block', fontWeight: '500' }}>Gothic Sound Chimes</span>
+                  <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)' }}>Play low atmospheric sounds on alerts</span>
+                </div>
+                <div 
+                  onClick={() => toggleSounds(!soundsEnabled)}
+                  style={{
+                    width: '44px',
+                    height: '24px',
+                    borderRadius: '12px',
+                    background: soundsEnabled ? 'var(--gold-dark)' : 'rgba(255, 255, 255, 0.1)',
+                    border: '1px solid var(--gold)',
+                    position: 'relative',
+                    cursor: 'pointer',
+                    transition: 'var(--transition-smooth)'
+                  }}
+                >
+                  <div style={{
+                    width: '18px',
+                    height: '18px',
+                    borderRadius: '50%',
+                    background: 'var(--text-primary)',
+                    position: 'absolute',
+                    top: '2px',
+                    left: soundsEnabled ? '22px' : '2px',
+                    transition: 'var(--transition-smooth)',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.4)'
+                  }} />
+                </div>
+              </div>
+
+              {/* Web Push toggle */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <span style={{ fontSize: '0.85rem', color: 'var(--text-primary)', display: 'block', fontWeight: '500' }}>Web Push Alerts</span>
+                  <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)' }}>Silence alerts in the background</span>
+                </div>
+                <div 
+                  onClick={() => togglePush(!pushEnabled)}
+                  style={{
+                    width: '44px',
+                    height: '24px',
+                    borderRadius: '12px',
+                    background: pushEnabled ? 'var(--gold-dark)' : 'rgba(255, 255, 255, 0.1)',
+                    border: '1px solid var(--gold)',
+                    position: 'relative',
+                    cursor: 'pointer',
+                    transition: 'var(--transition-smooth)'
+                  }}
+                >
+                  <div style={{
+                    width: '18px',
+                    height: '18px',
+                    borderRadius: '50%',
+                    background: 'var(--text-primary)',
+                    position: 'absolute',
+                    top: '2px',
+                    left: pushEnabled ? '22px' : '2px',
+                    transition: 'var(--transition-smooth)',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.4)'
+                  }} />
+                </div>
+              </div>
+
+              {/* PWA manual details */}
+              <div style={{ 
+                marginTop: '6px', 
+                padding: '10px', 
+                background: 'rgba(255,255,255,0.02)', 
+                border: 'var(--border-dark)', 
+                borderRadius: '4px',
+                fontSize: '0.7rem',
+                color: 'var(--text-secondary)',
+                lineHeight: '1.4'
+              }}>
+                <strong style={{ color: 'var(--gold)', display: 'block', marginBottom: '2px' }}>PWA Home Screen Installation</strong>
+                iOS Safari users must click Share 📤 then "Add to Home Screen" to receive background push notifications.
+              </div>
+            </div>
+            
+            <button 
+              className="gothic-btn" 
+              style={{ width: '100%', padding: '10px', fontSize: '0.8rem', marginTop: '4px' }}
+              onClick={() => setShowSettingsModal(false)}
+            >
+              Close Settings
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );

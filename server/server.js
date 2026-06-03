@@ -95,6 +95,16 @@ app.post('/api/subscribe', (req, res) => {
   res.status(201).json({ success: true });
 });
 
+// Web Push unsubscribe endpoint
+app.post('/api/unsubscribe', (req, res) => {
+  const { playerId, endpoint } = req.body;
+  if (!playerId || !endpoint) {
+    return res.status(400).json({ error: 'Missing playerId or endpoint data' });
+  }
+  notifier.removeSubscription(playerId, endpoint);
+  res.status(200).json({ success: true });
+});
+
 // Fallback to React client routing in production
 app.get('*', (req, res, next) => {
   // If requesting api, let it handle naturally or 404
