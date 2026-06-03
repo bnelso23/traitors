@@ -5,6 +5,7 @@ import PlayerDashboard from './components/PlayerDashboard';
 import GMDashboard from './components/GMDashboard';
 import InstallPrompt from './components/InstallPrompt';
 import { Shield, MessageSquare, Award, LogOut, BellRing, User, Settings } from 'lucide-react';
+import PlayerAvatar from './components/PlayerAvatar';
 
 // Synthesize gothic sounds using browser Web Audio API
 export const playSound = (type) => {
@@ -596,30 +597,20 @@ function App() {
                   borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
                   marginBottom: '6px'
                 }}>
-                  <div style={{
-                    width: '70px',
-                    height: '70px',
-                    borderRadius: '50%',
-                    border: '2px solid var(--gold)',
-                    background: 'var(--bg-primary)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    overflow: 'hidden',
-                    boxShadow: '0 0 10px rgba(197, 160, 40, 0.2)'
-                  }}>
-                    {user.avatarUrl ? (
-                      <img 
-                        src={user.avatarUrl} 
-                        alt={user.name} 
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                      />
-                    ) : (
-                      <span style={{ fontSize: '1.8rem', color: 'var(--gold)', fontWeight: 'bold', fontFamily: 'var(--font-serif)' }}>
-                        {user.name ? user.name[0] : '?'}
-                      </span>
-                    )}
-                  </div>
+                  <PlayerAvatar 
+                    name={user.name}
+                    avatarUrl={user.avatarUrl}
+                    fallbackType="initials"
+                    initialsSize="1.8rem"
+                    containerStyle={{
+                      width: '70px',
+                      height: '70px',
+                      borderRadius: '50%',
+                      border: '2px solid var(--gold)',
+                      background: 'var(--bg-primary)',
+                      boxShadow: '0 0 10px rgba(197, 160, 40, 0.2)'
+                    }}
+                  />
                   <label 
                     className="gothic-btn" 
                     style={{ 

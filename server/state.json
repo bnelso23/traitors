@@ -14,17 +14,16 @@
       "id": "p1",
       "name": "Hayli",
       "pin": "1001",
-      "role": "TRAITOR",
+      "role": "FAITHFUL",
       "status": "ALIVE",
       "shielded": false,
-      "sessionToken": "0fae81a094ceac58789ccc28b3792608",
-      "avatarUrl": "/uploads/avatar_p1_1780459992435.jpeg"
+      "sessionToken": "08dfc915a706745a2a6a295af5f4693e"
     },
     {
       "id": "p2",
       "name": "Jen",
       "pin": "1002",
-      "role": "TRAITOR",
+      "role": "FAITHFUL",
       "status": "ALIVE",
       "shielded": false
     },
@@ -32,7 +31,7 @@
       "id": "p3",
       "name": "Alix",
       "pin": "1003",
-      "role": "TRAITOR",
+      "role": "FAITHFUL",
       "status": "ALIVE",
       "shielded": false
     },
@@ -40,7 +39,7 @@
       "id": "p4",
       "name": "Tanner",
       "pin": "1004",
-      "role": "TRAITOR",
+      "role": "FAITHFUL",
       "status": "ALIVE",
       "shielded": false
     },
@@ -48,7 +47,7 @@
       "id": "p5",
       "name": "Bryce",
       "pin": "1005",
-      "role": "FAITHFUL",
+      "role": "TRAITOR",
       "status": "ALIVE",
       "shielded": false
     },
@@ -72,7 +71,7 @@
       "id": "p8",
       "name": "Naeim",
       "pin": "1008",
-      "role": "FAITHFUL",
+      "role": "TRAITOR",
       "status": "ALIVE",
       "shielded": false
     },
@@ -111,14 +110,14 @@
   ],
   "messages": [
     {
-      "id": "alert_1780459984012",
+      "id": "alert_1780462609402",
       "senderId": "gm",
       "senderName": "Game Master",
       "channelId": "gm-alerts",
       "text": "The game has officially begun! Guard your secrets...",
-      "timestamp": "2026-06-03T04:13:04.012Z"
+      "timestamp": "2026-06-03T04:56:49.403Z"
     }
   ],
   "groups": [],
-  "gmSessionToken": "e58a3ecbc5c1f1cd6d5887b02c524f44"
+  "gmSessionToken": "a59f9883b2ffc02b7fd7e9ea2e975502"
 }

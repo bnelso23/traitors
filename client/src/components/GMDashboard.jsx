@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Play, Users, Skull, MessageSquare, Volume2, KeyRound, Award, RefreshCw, ChevronDown, ChevronUp, Bell, Check, Send, Lock, Eye } from 'lucide-react';
+import PlayerAvatar from './PlayerAvatar';
 
 function GMDashboard({ gameState, emitSocket }) {
   const [activeSection, setActiveSection] = useState('players'); // players, chats, voting, broadcast, setup
@@ -345,30 +346,21 @@ function GMDashboard({ gameState, emitSocket }) {
                           }}
                           title="Click to upload/change player portrait"
                         >
-                          <div style={{
-                            width: '36px',
-                            height: '36px',
-                            borderRadius: '50%',
-                            border: isAlive ? (isTraitor ? '1.5px solid var(--crimson)' : '1.5px solid var(--gold)') : '1.5px solid var(--text-muted)',
-                            background: 'var(--bg-primary)',
-                            overflow: 'hidden',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            boxShadow: '0 0 5px rgba(0, 0, 0, 0.5)'
-                          }}>
-                            {p.avatarUrl ? (
-                              <img 
-                                src={p.avatarUrl} 
-                                alt={p.name} 
-                                style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                              />
-                            ) : (
-                              <span style={{ fontSize: '0.85rem', color: isAlive ? 'var(--gold)' : 'var(--text-secondary)', fontWeight: 'bold', fontFamily: 'var(--font-serif)' }}>
-                                {p.name ? p.name[0] : '?'}
-                              </span>
-                            )}
-                          </div>
+                          <PlayerAvatar 
+                            name={p.name}
+                            avatarUrl={p.avatarUrl}
+                            fallbackType="initials"
+                            initialsSize="0.85rem"
+                            initialsColor={isAlive ? 'var(--gold)' : 'var(--text-secondary)'}
+                            containerStyle={{
+                              width: '36px',
+                              height: '36px',
+                              borderRadius: '50%',
+                              border: isAlive ? (isTraitor ? '1.5px solid var(--crimson)' : '1.5px solid var(--gold)') : '1.5px solid var(--text-muted)',
+                              background: 'var(--bg-primary)',
+                              boxShadow: '0 0 5px rgba(0, 0, 0, 0.5)'
+                            }}
+                          />
                           <input 
                             type="file" 
                             accept="image/*" 

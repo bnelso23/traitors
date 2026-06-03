@@ -10,7 +10,7 @@ dotenv.config();
 
 const crypto = require('crypto');
 const fs = require('fs');
-const { S3Client, PutObjectCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3');
+const { S3Client, PutObjectCommand, DeleteObjectCommand, GetObjectCommand } = require('@aws-sdk/client-s3');
 
 const { initDb, loadState, saveState, getState, resetState } = require('./gameStore');
 const notifier = require('./notifier');
@@ -27,7 +27,8 @@ const io = new Server(server, {
 const PORT = process.env.PORT || 3001;
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '15mb' }));
+app.use(express.urlencoded({ limit: '15mb', extended: true }));
 
 // Load initial game state
 let gameLoaded = false;
@@ -53,13 +54,6 @@ app.get('/sw.js', (req, res) => {
   res.sendFile(path.join(__dirname, '../client/dist/sw.js'));
 });
 
-// Configure uploads directory (using Railway volume if attached, else local uploads folder)
-const uploadDir = process.env.RAILWAY_VOLUME_MOUNT_PATH || path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
-app.use('/uploads', express.static(uploadDir));
-
 // Setup S3-compatible client for Railway Buckets
 const s3Enabled = !!(process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY && process.env.AWS_ENDPOINT);
 let s3Client = null;
@@ -77,6 +71,61 @@ if (s3Enabled) {
 } else {
   console.log('S3 environment variables not set. Using local file storage for uploads.');
 }
+
+// Proxy route to serve uploads from S3 (if enabled)
+app.get('/uploads/:filename', async (req, res, next) => {
+  if (s3Enabled && s3Client) {
+    const { filename } = req.params;
+    try {
+      const response = await s3Client.send(new GetObjectCommand({
+        Bucket: process.env.AWS_BUCKET_NAME,
+        Key: filename
+      }));
+      res.setHeader('Content-Type', response.ContentType || 'image/jpeg');
+      if (response.ContentLength) {
+        res.setHeader('Content-Length', response.ContentLength);
+      }
+      res.setHeader('Cache-Control', 'public, max-age=31536000');
+      response.Body.pipe(res);
+    } catch (err) {
+      console.warn(`S3 file get error for ${filename}, falling back to local files:`, err.message);
+      next();
+    }
+  } else {
+    next();
+  }
+});
+
+// Proxy route to serve defaults from S3 (if enabled)
+app.get('/defaults/:filename', async (req, res, next) => {
+  if (s3Enabled && s3Client) {
+    const { filename } = req.params;
+    try {
+      const response = await s3Client.send(new GetObjectCommand({
+        Bucket: process.env.AWS_BUCKET_NAME,
+        Key: `defaults/${filename}`
+      }));
+      res.setHeader('Content-Type', response.ContentType || 'image/jpeg');
+      if (response.ContentLength) {
+        res.setHeader('Content-Length', response.ContentLength);
+      }
+      res.setHeader('Cache-Control', 'public, max-age=31536000');
+      response.Body.pipe(res);
+    } catch (err) {
+      console.warn(`S3 defaults get error for ${filename}, falling back to local defaults:`, err.message);
+      next();
+    }
+  } else {
+    next();
+  }
+});
+
+// Configure uploads directory (using Railway volume if attached, else local uploads folder)
+const uploadDir = process.env.RAILWAY_VOLUME_MOUNT_PATH || path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+app.use('/uploads', express.static(uploadDir));
 
 // Serve static client build files in production
 app.use(express.static(path.join(__dirname, '../client/dist')));
@@ -186,9 +235,9 @@ app.post('/api/upload-avatar', async (req, res) => {
     if (s3Client) {
       // --- S3 BUCKET UPLOAD ---
       // Delete old S3 object if it exists to conserve space
-      if (player.avatarUrl && player.avatarUrl.includes(process.env.AWS_ENDPOINT)) {
+      if (player.avatarUrl && player.avatarUrl.startsWith('/uploads/')) {
         try {
-          const oldFilename = player.avatarUrl.substring(player.avatarUrl.lastIndexOf('/') + 1);
+          const oldFilename = player.avatarUrl.replace('/uploads/', '');
           await s3Client.send(new DeleteObjectCommand({
             Bucket: process.env.AWS_BUCKET_NAME,
             Key: oldFilename
@@ -208,8 +257,8 @@ app.post('/api/upload-avatar', async (req, res) => {
         ACL: 'public-read'
       }));
 
-      // Construct public S3 URL
-      newAvatarUrl = `${process.env.AWS_ENDPOINT}/${process.env.AWS_BUCKET_NAME}/${filename}`;
+      // Construct public URL using the proxy endpoint
+      newAvatarUrl = `/uploads/${filename}`;
       console.log(`Uploaded new avatar to S3: ${newAvatarUrl}`);
     } else {
       // --- LOCAL FILESYSTEM UPLOAD ---

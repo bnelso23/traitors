@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Shield, MessageSquare, Award, Volume2, Key, HelpCircle, User, Users, Lock, ChevronRight, Check, Bell } from 'lucide-react';
+import PlayerAvatar from './PlayerAvatar';
 
 function PlayerDashboard({ gameState, emitSocket, initialTab = 'dashboard', onNavigateChat }) {
   const [tab, setTab] = useState(initialTab);
@@ -98,30 +99,23 @@ function PlayerDashboard({ gameState, emitSocket, initialTab = 'dashboard', onNa
             className={`gothic-panel ${isTraitor && isAlive ? 'gothic-panel-crimson crimson-glow' : 'candle-glow'}`}
             style={{ textAlign: 'center' }}
           >
-            {clientPlayer.avatarUrl ? (
-              <div style={{
+            <PlayerAvatar 
+              name={clientPlayer.name}
+              avatarUrl={clientPlayer.avatarUrl}
+              fallbackType="shield"
+              shieldSize={36}
+              shieldClassName={isTraitor && isAlive ? 'text-crimson' : 'text-gold'}
+              shieldStyle={{ margin: '0 auto 10px', display: 'block', animation: 'flicker 4s infinite alternate' }}
+              containerStyle={{
                 width: '80px',
                 height: '80px',
                 borderRadius: '50%',
                 border: isTraitor && isAlive ? '2px solid var(--crimson)' : '2px solid var(--gold)',
                 margin: '0 auto 12px',
-                overflow: 'hidden',
                 boxShadow: isTraitor && isAlive ? 'var(--shadow-crimson)' : 'var(--shadow-candle)',
                 animation: 'flicker 4s infinite alternate ease-in-out'
-              }}>
-                <img 
-                  src={clientPlayer.avatarUrl} 
-                  alt={clientPlayer.name} 
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                />
-              </div>
-            ) : (
-              <Shield 
-                size={36} 
-                className={isTraitor && isAlive ? 'text-crimson' : 'text-gold'} 
-                style={{ margin: '0 auto 10px', display: 'block', animation: 'flicker 4s infinite alternate' }} 
-              />
-            )}
+              }}
+            />
             <h3 style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Your Secret Order</h3>
             <h2 style={{ fontSize: '1.4rem', letterSpacing: '0.15em', marginTop: '4px' }}>
               {gameState.gameStatus === 'LOBBY' ? 'IDENTITY SECURED' : (isAlive ? clientPlayer.role : 'ELIMINATED')}
@@ -230,30 +224,20 @@ function PlayerDashboard({ gameState, emitSocket, initialTab = 'dashboard', onNa
                     style={{ cursor: pAlive ? 'pointer' : 'default', padding: '10px 12px' }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <div style={{
-                        width: '32px',
-                        height: '32px',
-                        borderRadius: '50%',
-                        border: '1px solid var(--gold)',
-                        background: 'var(--bg-primary)',
-                        overflow: 'hidden',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        flexShrink: 0
-                      }}>
-                        {p.avatarUrl ? (
-                          <img 
-                            src={p.avatarUrl} 
-                            alt={p.name} 
-                            style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                          />
-                        ) : (
-                          <span style={{ fontSize: '0.8rem', color: 'var(--gold)', fontWeight: 'bold', fontFamily: 'var(--font-serif)' }}>
-                            {p.name ? p.name[0] : '?'}
-                          </span>
-                        )}
-                      </div>
+                      <PlayerAvatar 
+                        name={p.name}
+                        avatarUrl={p.avatarUrl}
+                        fallbackType="initials"
+                        initialsSize="0.8rem"
+                        containerStyle={{
+                          width: '32px',
+                          height: '32px',
+                          borderRadius: '50%',
+                          border: '1px solid var(--gold)',
+                          background: 'var(--bg-primary)',
+                          flexShrink: 0
+                        }}
+                      />
                       <div style={{ display: 'flex', flexDirection: 'column' }}>
                         <span style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>{p.name}</span>
                         <div style={{ display: 'flex', gap: '4px', marginTop: '2px' }}>
