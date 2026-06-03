@@ -55,7 +55,8 @@ app.get('/sw.js', (req, res) => {
 });
 
 // Setup S3-compatible client for Railway Buckets
-const s3Enabled = !!(process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY && process.env.AWS_ENDPOINT);
+const bucketName = process.env.AWS_BUCKET_NAME || process.env.AWS_BUCKET || process.env.BUCKET_NAME;
+const s3Enabled = !!(process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY && process.env.AWS_ENDPOINT && bucketName);
 let s3Client = null;
 if (s3Enabled) {
   s3Client = new S3Client({
@@ -67,7 +68,7 @@ if (s3Enabled) {
     },
     forcePathStyle: true
   });
-  console.log('Railway Buckets (S3 Storage) client initialized successfully.');
+  console.log(`Railway Buckets (S3 Storage) client initialized successfully. Bucket: ${bucketName}, Endpoint: ${process.env.AWS_ENDPOINT}`);
 } else {
   console.log('S3 environment variables not set. Using local file storage for uploads.');
 }
@@ -78,7 +79,7 @@ app.get('/uploads/:filename', async (req, res, next) => {
     const { filename } = req.params;
     try {
       const response = await s3Client.send(new GetObjectCommand({
-        Bucket: process.env.AWS_BUCKET_NAME,
+        Bucket: bucketName,
         Key: filename
       }));
       res.setHeader('Content-Type', response.ContentType || 'image/jpeg');
@@ -102,7 +103,7 @@ app.get('/defaults/:filename', async (req, res, next) => {
     const { filename } = req.params;
     try {
       const response = await s3Client.send(new GetObjectCommand({
-        Bucket: process.env.AWS_BUCKET_NAME,
+        Bucket: bucketName,
         Key: `defaults/${filename}`
       }));
       res.setHeader('Content-Type', response.ContentType || 'image/jpeg');
@@ -239,7 +240,7 @@ app.post('/api/upload-avatar', async (req, res) => {
         try {
           const oldFilename = player.avatarUrl.replace('/uploads/', '');
           await s3Client.send(new DeleteObjectCommand({
-            Bucket: process.env.AWS_BUCKET_NAME,
+            Bucket: bucketName,
             Key: oldFilename
           }));
           console.log(`Deleted old avatar object from S3: ${oldFilename}`);
@@ -250,7 +251,7 @@ app.post('/api/upload-avatar', async (req, res) => {
 
       // Upload new S3 object
       await s3Client.send(new PutObjectCommand({
-        Bucket: process.env.AWS_BUCKET_NAME,
+        Bucket: bucketName,
         Key: filename,
         Body: buffer,
         ContentType: imageType,
