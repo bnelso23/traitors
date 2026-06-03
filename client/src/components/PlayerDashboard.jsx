@@ -62,8 +62,13 @@ function PlayerDashboard({ gameState, emitSocket, initialTab = 'dashboard', onNa
   };
 
   const handleSelectPmPlayer = (player) => {
-    setSelectedPmPlayer(player);
-    setActiveChannel(getPrivateChannelId(player.id));
+    if (onNavigateChat) {
+      onNavigateChat(getPrivateChannelId(player.id));
+    } else {
+      setSelectedPmPlayer(player);
+      setActiveChannel(getPrivateChannelId(player.id));
+      setTab('chat');
+    }
   };
 
   const handleSendChat = (e) => {
@@ -88,7 +93,7 @@ function PlayerDashboard({ gameState, emitSocket, initialTab = 'dashboard', onNa
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%', flex: 1 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%', flex: 1, minHeight: 0 }}>
       
       {/* SECTION: PLAYER DASHBOARD TAB */}
       {tab === 'dashboard' && (
@@ -267,7 +272,7 @@ function PlayerDashboard({ gameState, emitSocket, initialTab = 'dashboard', onNa
 
       {/* SECTION: CHAMBER CHAT TAB */}
       {tab === 'chat' && (
-        <div style={{ display: 'flex', flexDirection: 'column', height: '100%', flex: 1, padding: '12px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', height: '100%', flex: 1, padding: '12px', minHeight: 0 }}>
           
           {/* Channel Select Slider */}
           <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '10px', scrollbarWidth: 'none', alignItems: 'center' }}>
@@ -387,7 +392,7 @@ function PlayerDashboard({ gameState, emitSocket, initialTab = 'dashboard', onNa
           </div>
 
           {/* Main Chat Stream Window */}
-          <div className="chat-window" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+          <div className="chat-window" style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
             
             {/* Header displaying channel description */}
             <div className="chat-header">

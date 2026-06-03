@@ -467,7 +467,7 @@ function App() {
       </header>
 
       {/* Main App Page Routing */}
-      <main className="app-content">
+      <main className={`app-content ${activeTab === 'chat' ? 'no-scroll' : ''}`}>
         {!user ? (
           <>
             <LoginScreen onLogin={handleLogin} />

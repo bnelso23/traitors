@@ -20,7 +20,7 @@ export default function PlayerAvatar({
       setImageSrc(avatarUrl);
       setFailed(false);
     } else if (name) {
-      setImageSrc(`/defaults/${name}.jpg`);
+      setImageSrc(`/defaults/${name}.png`);
       setFailed(false);
     } else {
       setImageSrc(null);
@@ -29,14 +29,14 @@ export default function PlayerAvatar({
   }, [avatarUrl, name]);
 
   const handleError = () => {
-    // If the custom upload failed, try the default .jpg image
+    // If the custom upload failed, try the default .png image
     if (imageSrc === avatarUrl && name) {
-      setImageSrc(`/defaults/${name}.jpg`);
-    } else if (imageSrc === `/defaults/${name}.jpg` && name) {
-      // Default .jpg failed, try .png
       setImageSrc(`/defaults/${name}.png`);
     } else if (imageSrc === `/defaults/${name}.png` && name) {
-      // Default .png failed, try .jpeg
+      // Default .png failed, try .jpg
+      setImageSrc(`/defaults/${name}.jpg`);
+    } else if (imageSrc === `/defaults/${name}.jpg` && name) {
+      // Default .jpg failed, try .jpeg
       setImageSrc(`/defaults/${name}.jpeg`);
     } else {
       // Everything failed
