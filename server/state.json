@@ -1,7 +1,7 @@
 {
   "roomCode": "TRAITORS",
   "gmPin": "9999",
-  "gameStatus": "LOBBY",
+  "gameStatus": "ACTIVE",
   "chatsEnabled": true,
   "privateChatsEnabled": true,
   "traitorsChatEnabled": false,
@@ -14,86 +14,111 @@
       "id": "p1",
       "name": "Hayli",
       "pin": "1001",
-      "role": "UNKNOWN",
-      "status": "ALIVE"
+      "role": "TRAITOR",
+      "status": "ALIVE",
+      "shielded": false,
+      "sessionToken": "0fae81a094ceac58789ccc28b3792608",
+      "avatarUrl": "/uploads/avatar_p1_1780459992435.jpeg"
     },
     {
       "id": "p2",
       "name": "Jen",
       "pin": "1002",
-      "role": "UNKNOWN",
-      "status": "ALIVE"
+      "role": "TRAITOR",
+      "status": "ALIVE",
+      "shielded": false
     },
     {
       "id": "p3",
       "name": "Alix",
       "pin": "1003",
-      "role": "UNKNOWN",
-      "status": "ALIVE"
+      "role": "TRAITOR",
+      "status": "ALIVE",
+      "shielded": false
     },
     {
       "id": "p4",
       "name": "Tanner",
       "pin": "1004",
-      "role": "UNKNOWN",
-      "status": "ALIVE"
+      "role": "TRAITOR",
+      "status": "ALIVE",
+      "shielded": false
     },
     {
       "id": "p5",
       "name": "Bryce",
       "pin": "1005",
-      "role": "UNKNOWN",
-      "status": "ALIVE"
+      "role": "FAITHFUL",
+      "status": "ALIVE",
+      "shielded": false
     },
     {
       "id": "p6",
       "name": "Kelsie",
       "pin": "1006",
-      "role": "UNKNOWN",
-      "status": "ALIVE"
+      "role": "FAITHFUL",
+      "status": "ALIVE",
+      "shielded": false
     },
     {
       "id": "p7",
       "name": "Alyssa",
       "pin": "1007",
-      "role": "UNKNOWN",
-      "status": "ALIVE"
+      "role": "FAITHFUL",
+      "status": "ALIVE",
+      "shielded": false
     },
     {
       "id": "p8",
       "name": "Naeim",
       "pin": "1008",
-      "role": "UNKNOWN",
-      "status": "ALIVE"
+      "role": "FAITHFUL",
+      "status": "ALIVE",
+      "shielded": false
     },
     {
       "id": "p9",
       "name": "Matt",
       "pin": "1009",
-      "role": "UNKNOWN",
-      "status": "ALIVE"
+      "role": "FAITHFUL",
+      "status": "ALIVE",
+      "shielded": false
     },
     {
       "id": "p10",
       "name": "Allyson",
       "pin": "1010",
-      "role": "UNKNOWN",
-      "status": "ALIVE"
+      "role": "FAITHFUL",
+      "status": "ALIVE",
+      "shielded": false
     },
     {
       "id": "p11",
       "name": "Sarah",
       "pin": "1011",
-      "role": "UNKNOWN",
-      "status": "ALIVE"
+      "role": "FAITHFUL",
+      "status": "ALIVE",
+      "shielded": false
     },
     {
       "id": "p12",
       "name": "Derek",
       "pin": "1012",
-      "role": "UNKNOWN",
-      "status": "ALIVE"
+      "role": "FAITHFUL",
+      "status": "ALIVE",
+      "shielded": false
     }
   ],
-  "messages": []
+  "messages": [
+    {
+      "id": "alert_1780459984012",
+      "senderId": "gm",
+      "senderName": "Game Master",
+      "channelId": "gm-alerts",
+      "text": "The game has officially begun! Guard your secrets...",
+      "timestamp": "2026-06-03T04:13:04.012Z"
+    }
+  ],
+  "groups": [],
+  "gmSessionToken": "e58a3ecbc5c1f1cd6d5887b02c524f44"
 }

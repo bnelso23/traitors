@@ -99,6 +99,7 @@ function App() {
   const [toast, setToast] = useState(null);
   const [unreadAlerts, setUnreadAlerts] = useState(false);
   const socketRef = useRef(null);
+  const toastTimeoutRef = useRef(null);
   
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [pushEnabled, setPushEnabled] = useState(() => {
@@ -152,33 +153,44 @@ function App() {
 
     socket.on('connect', () => {
       console.log('Socket connected to backend');
-      socket.emit('authenticate', { userId: user.id });
+      socket.emit('authenticate', { 
+        userId: user.id, 
+        sessionToken: user.sessionToken 
+      });
+    });
+
+    socket.on('authFailed', () => {
+      console.error('Socket authentication failed. Logging out...');
+      setUser(null);
+      localStorage.removeItem('traitors_user');
     });
 
     socket.on('gameState', (newGameState) => {
-      console.log('Received Game State update:', newGameState);
-      
       // Look for notifications / updates by comparing states
       setGameState((prev) => {
         if (prev) {
           // Play sounds for dramatic shifts
           if (!prev.votingActive && newGameState.votingActive) {
             playSound('alert');
-            showToast('The Roundtable is active! Cast your vote.');
+            showToast('The Roundtable is active! Cast your vote.', null, 'voting');
           }
           if (prev.clientPlayer?.status === 'ALIVE' && newGameState.clientPlayer?.status === 'DEAD') {
             playSound('death');
-            showToast('You have been assassinated.');
+            showToast('You have been assassinated.', null, 'dashboard');
           }
           if (newGameState.messages.length > prev.messages.length) {
             const newMsg = newGameState.messages[newGameState.messages.length - 1];
             if (newMsg.senderId !== user.id) {
               if (newMsg.channelId === 'gm-alerts') {
                 playSound('alert');
-                showToast(`GM Alert: ${newMsg.text}`);
+                showToast(`GM Alert: ${newMsg.text}`, null, 'dashboard');
               } else {
                 playSound('message');
-                showToast(`New letter in ${newMsg.channelId === 'global' ? 'Lounge' : newMsg.channelId === 'traitors' ? 'Den' : 'Private'}`);
+                const channelName = newMsg.channelId === 'global' ? 'Lounge' : 
+                                    newMsg.channelId === 'traitors' ? 'Den' : 
+                                    newMsg.channelId === 'graveyard' ? 'Graveyard' :
+                                    newMsg.channelId.startsWith('group_') ? 'Alliance' : 'Private';
+                showToast(`New letter in ${channelName} from ${newMsg.senderName}`, newMsg.channelId, 'chat');
               }
             }
           }
@@ -188,7 +200,6 @@ function App() {
     });
 
     socket.on('votingResults', (results) => {
-      console.log('Received voting results:', results);
       // Custom event for GM or players to display
       if (user.role === 'GM') {
         window.dispatchEvent(new CustomEvent('traitors_voting_results', { detail: results }));
@@ -240,9 +251,25 @@ function App() {
     }
   }, [activeTab, gameState?.messages, user]);
 
-  const showToast = (message) => {
-    setToast(message);
-    setTimeout(() => setToast(null), 5000);
+  const showToast = (text, channelId = null, tab = null) => {
+    setToast({ text, channelId, tab });
+    if (toastTimeoutRef.current) {
+      clearTimeout(toastTimeoutRef.current);
+    }
+    toastTimeoutRef.current = setTimeout(() => setToast(null), 5500);
+  };
+
+  const handleToastClick = () => {
+    if (!toast) return;
+    if (toast.tab) {
+      setActiveTab(toast.tab);
+      if (toast.tab === 'chat' && toast.channelId) {
+        setTimeout(() => {
+          window.dispatchEvent(new CustomEvent('traitors_select_chat', { detail: toast.channelId }));
+        }, 50);
+      }
+    }
+    setToast(null);
   };
 
   const togglePush = async (enable) => {
@@ -331,6 +358,42 @@ function App() {
     return outputArray;
   }
 
+  const handleAvatarChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      try {
+        const base64Data = reader.result;
+        const res = await fetch('/api/upload-avatar', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            playerId: user.id,
+            image: base64Data
+          })
+        });
+
+        const data = await res.json();
+        if (res.ok && data.success) {
+          const updatedUser = { ...user, avatarUrl: data.avatarUrl };
+          setUser(updatedUser);
+          localStorage.setItem('traitors_user', JSON.stringify(updatedUser));
+          showToast('Profile portrait updated.', null, 'dashboard');
+        } else {
+          alert(data.error || 'Failed to upload image.');
+        }
+      } catch (err) {
+        console.error('Avatar upload error:', err);
+        alert('Network error. Failed to upload avatar.');
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleLogin = (loggedUser) => {
     setUser(loggedUser);
     localStorage.setItem('traitors_user', JSON.stringify(loggedUser));
@@ -352,11 +415,15 @@ function App() {
     <div className="app-container">
       {/* Toast Notification Banner */}
       {toast && (
-        <div className="toast-banner">
+        <div 
+          className="toast-banner" 
+          onClick={handleToastClick}
+          style={{ cursor: 'pointer', transition: 'var(--transition-fast)' }}
+        >
           <BellRing className="text-gold" size={20} style={{ flexShrink: 0, marginTop: '2px' }} />
           <div>
             <h4 style={{ fontSize: '0.75rem', fontFamily: 'var(--font-serif)', color: 'var(--gold)', textTransform: 'uppercase', marginBottom: '2px' }}>Castle Courier</h4>
-            <p style={{ fontSize: '0.85rem', color: 'var(--text-primary)' }}>{toast}</p>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-primary)' }}>{toast.text}</p>
           </div>
         </div>
       )}
@@ -518,6 +585,62 @@ function App() {
             </h3>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              {/* Profile Image Upload */}
+              {user && user.id !== 'gm' && (
+                <div style={{ 
+                  display: 'flex', 
+                  flexDirection: 'column', 
+                  alignItems: 'center', 
+                  gap: '10px',
+                  paddingBottom: '12px',
+                  borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
+                  marginBottom: '6px'
+                }}>
+                  <div style={{
+                    width: '70px',
+                    height: '70px',
+                    borderRadius: '50%',
+                    border: '2px solid var(--gold)',
+                    background: 'var(--bg-primary)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    overflow: 'hidden',
+                    boxShadow: '0 0 10px rgba(197, 160, 40, 0.2)'
+                  }}>
+                    {user.avatarUrl ? (
+                      <img 
+                        src={user.avatarUrl} 
+                        alt={user.name} 
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                      />
+                    ) : (
+                      <span style={{ fontSize: '1.8rem', color: 'var(--gold)', fontWeight: 'bold', fontFamily: 'var(--font-serif)' }}>
+                        {user.name ? user.name[0] : '?'}
+                      </span>
+                    )}
+                  </div>
+                  <label 
+                    className="gothic-btn" 
+                    style={{ 
+                      padding: '6px 12px', 
+                      fontSize: '0.7rem', 
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}
+                  >
+                    <span>Change Portrait</span>
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      onChange={handleAvatarChange} 
+                      style={{ display: 'none' }} 
+                    />
+                  </label>
+                </div>
+              )}
               {/* Sound toggle */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>

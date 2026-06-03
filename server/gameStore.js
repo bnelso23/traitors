@@ -14,18 +14,18 @@ const defaultState = {
   votingOptions: [], // Array of playerIds
   votes: {}, // voterId -> votedId
   players: [
-    { id: 'p1', name: 'Hayli', pin: '1001', role: 'UNKNOWN', status: 'ALIVE' },
-    { id: 'p2', name: 'Jen', pin: '1002', role: 'UNKNOWN', status: 'ALIVE' },
-    { id: 'p3', name: 'Alix', pin: '1003', role: 'UNKNOWN', status: 'ALIVE' },
-    { id: 'p4', name: 'Tanner', pin: '1004', role: 'UNKNOWN', status: 'ALIVE' },
-    { id: 'p5', name: 'Bryce', pin: '1005', role: 'UNKNOWN', status: 'ALIVE' },
-    { id: 'p6', name: 'Kelsie', pin: '1006', role: 'UNKNOWN', status: 'ALIVE' },
-    { id: 'p7', name: 'Alyssa', pin: '1007', role: 'UNKNOWN', status: 'ALIVE' },
-    { id: 'p8', name: 'Naeim', pin: '1008', role: 'UNKNOWN', status: 'ALIVE' },
-    { id: 'p9', name: 'Matt', pin: '1009', role: 'UNKNOWN', status: 'ALIVE' },
-    { id: 'p10', name: 'Allyson', pin: '1010', role: 'UNKNOWN', status: 'ALIVE' },
-    { id: 'p11', name: 'Sarah', pin: '1011', role: 'UNKNOWN', status: 'ALIVE' },
-    { id: 'p12', name: 'Derek', pin: '1012', role: 'UNKNOWN', status: 'ALIVE' }
+    { id: 'p1', name: 'Hayli', pin: '1001', role: 'UNKNOWN', status: 'ALIVE', shielded: false },
+    { id: 'p2', name: 'Jen', pin: '1002', role: 'UNKNOWN', status: 'ALIVE', shielded: false },
+    { id: 'p3', name: 'Alix', pin: '1003', role: 'UNKNOWN', status: 'ALIVE', shielded: false },
+    { id: 'p4', name: 'Tanner', pin: '1004', role: 'UNKNOWN', status: 'ALIVE', shielded: false },
+    { id: 'p5', name: 'Bryce', pin: '1005', role: 'UNKNOWN', status: 'ALIVE', shielded: false },
+    { id: 'p6', name: 'Kelsie', pin: '1006', role: 'UNKNOWN', status: 'ALIVE', shielded: false },
+    { id: 'p7', name: 'Alyssa', pin: '1007', role: 'UNKNOWN', status: 'ALIVE', shielded: false },
+    { id: 'p8', name: 'Naeim', pin: '1008', role: 'UNKNOWN', status: 'ALIVE', shielded: false },
+    { id: 'p9', name: 'Matt', pin: '1009', role: 'UNKNOWN', status: 'ALIVE', shielded: false },
+    { id: 'p10', name: 'Allyson', pin: '1010', role: 'UNKNOWN', status: 'ALIVE', shielded: false },
+    { id: 'p11', name: 'Sarah', pin: '1011', role: 'UNKNOWN', status: 'ALIVE', shielded: false },
+    { id: 'p12', name: 'Derek', pin: '1012', role: 'UNKNOWN', status: 'ALIVE', shielded: false }
   ],
   messages: [], // Array of { id, senderId, senderName, channelId, text, timestamp }
   groups: [] // Array of { id, name, memberIds, creatorId }

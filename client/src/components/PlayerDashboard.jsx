@@ -98,11 +98,30 @@ function PlayerDashboard({ gameState, emitSocket, initialTab = 'dashboard', onNa
             className={`gothic-panel ${isTraitor && isAlive ? 'gothic-panel-crimson crimson-glow' : 'candle-glow'}`}
             style={{ textAlign: 'center' }}
           >
-            <Shield 
-              size={36} 
-              className={isTraitor && isAlive ? 'text-crimson' : 'text-gold'} 
-              style={{ margin: '0 auto 10px', display: 'block', animation: 'flicker 4s infinite alternate' }} 
-            />
+            {clientPlayer.avatarUrl ? (
+              <div style={{
+                width: '80px',
+                height: '80px',
+                borderRadius: '50%',
+                border: isTraitor && isAlive ? '2px solid var(--crimson)' : '2px solid var(--gold)',
+                margin: '0 auto 12px',
+                overflow: 'hidden',
+                boxShadow: isTraitor && isAlive ? 'var(--shadow-crimson)' : 'var(--shadow-candle)',
+                animation: 'flicker 4s infinite alternate ease-in-out'
+              }}>
+                <img 
+                  src={clientPlayer.avatarUrl} 
+                  alt={clientPlayer.name} 
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                />
+              </div>
+            ) : (
+              <Shield 
+                size={36} 
+                className={isTraitor && isAlive ? 'text-crimson' : 'text-gold'} 
+                style={{ margin: '0 auto 10px', display: 'block', animation: 'flicker 4s infinite alternate' }} 
+              />
+            )}
             <h3 style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Your Secret Order</h3>
             <h2 style={{ fontSize: '1.4rem', letterSpacing: '0.15em', marginTop: '4px' }}>
               {gameState.gameStatus === 'LOBBY' ? 'IDENTITY SECURED' : (isAlive ? clientPlayer.role : 'ELIMINATED')}
@@ -118,6 +137,26 @@ function PlayerDashboard({ gameState, emitSocket, initialTab = 'dashboard', onNa
                 'You have met your demise. You can no longer speak with the living, only whisper in the Graveyard.'
               )}
             </p>
+            {clientPlayer.shielded && isAlive && (
+              <div 
+                style={{
+                  marginTop: '15px',
+                  padding: '10px 14px',
+                  background: 'rgba(197, 160, 40, 0.08)',
+                  border: '1px solid var(--gold)',
+                  borderRadius: '4px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  justifyContent: 'center'
+                }}
+              >
+                <Shield size={16} className="text-gold" style={{ filter: 'drop-shadow(0 0 4px var(--gold-glow))', flexShrink: 0 }} />
+                <span style={{ fontSize: '0.75rem', color: 'var(--gold)', fontWeight: 'bold', letterSpacing: '0.05em', textAlign: 'left' }}>
+                  Sacred Shield Active: You are protected from Traitor murder tonight.
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Web Push Notification status */}
@@ -188,19 +227,47 @@ function PlayerDashboard({ gameState, emitSocket, initialTab = 'dashboard', onNa
                     key={p.id} 
                     className={`player-card ${!pAlive ? 'dead' : ''}`}
                     onClick={() => pAlive && handleSelectPmPlayer(p)}
-                    style={{ cursor: pAlive ? 'pointer' : 'default' }}
+                    style={{ cursor: pAlive ? 'pointer' : 'default', padding: '10px 12px' }}
                   >
-                    <span style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>{p.name}</span>
-                    <div style={{ display: 'flex', gap: '4px', marginTop: '4px' }}>
-                      {pTraitor && (
-                        <span className="player-badge badge-traitor" style={{ fontSize: '0.5rem', padding: '1px 3px' }}>Traitor</span>
-                      )}
-                      {!pAlive && (
-                        <span className="player-badge badge-dead" style={{ fontSize: '0.5rem', padding: '1px 3px' }}>Dead</span>
-                      )}
-                      {pAlive && !pTraitor && (
-                        <span className="player-badge badge-faithful" style={{ fontSize: '0.5rem', padding: '1px 3px', opacity: 0.6 }}>Alive</span>
-                      )}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <div style={{
+                        width: '32px',
+                        height: '32px',
+                        borderRadius: '50%',
+                        border: '1px solid var(--gold)',
+                        background: 'var(--bg-primary)',
+                        overflow: 'hidden',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0
+                      }}>
+                        {p.avatarUrl ? (
+                          <img 
+                            src={p.avatarUrl} 
+                            alt={p.name} 
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                          />
+                        ) : (
+                          <span style={{ fontSize: '0.8rem', color: 'var(--gold)', fontWeight: 'bold', fontFamily: 'var(--font-serif)' }}>
+                            {p.name ? p.name[0] : '?'}
+                          </span>
+                        )}
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <span style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>{p.name}</span>
+                        <div style={{ display: 'flex', gap: '4px', marginTop: '2px' }}>
+                          {pTraitor && (
+                            <span className="player-badge badge-traitor" style={{ fontSize: '0.45rem', padding: '1px 3px' }}>Traitor</span>
+                          )}
+                          {!pAlive && (
+                            <span className="player-badge badge-dead" style={{ fontSize: '0.45rem', padding: '1px 3px' }}>Dead</span>
+                          )}
+                          {pAlive && !pTraitor && (
+                            <span className="player-badge badge-faithful" style={{ fontSize: '0.45rem', padding: '1px 3px', opacity: 0.6 }}>Alive</span>
+                          )}
+                        </div>
+                      </div>
                     </div>
                     {pAlive && (
                       <ChevronRight size={14} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />

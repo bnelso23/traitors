@@ -8,6 +8,10 @@ const dotenv = require('dotenv');
 // Load environment variables
 dotenv.config();
 
+const crypto = require('crypto');
+const fs = require('fs');
+const { S3Client, PutObjectCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3');
+
 const { initDb, loadState, saveState, getState, resetState } = require('./gameStore');
 const notifier = require('./notifier');
 
@@ -49,6 +53,31 @@ app.get('/sw.js', (req, res) => {
   res.sendFile(path.join(__dirname, '../client/dist/sw.js'));
 });
 
+// Configure uploads directory (using Railway volume if attached, else local uploads folder)
+const uploadDir = process.env.RAILWAY_VOLUME_MOUNT_PATH || path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+app.use('/uploads', express.static(uploadDir));
+
+// Setup S3-compatible client for Railway Buckets
+const s3Enabled = !!(process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY && process.env.AWS_ENDPOINT);
+let s3Client = null;
+if (s3Enabled) {
+  s3Client = new S3Client({
+    endpoint: process.env.AWS_ENDPOINT,
+    region: process.env.AWS_REGION || 'us-east-1',
+    credentials: {
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+    },
+    forcePathStyle: true
+  });
+  console.log('Railway Buckets (S3 Storage) client initialized successfully.');
+} else {
+  console.log('S3 environment variables not set. Using local file storage for uploads.');
+}
+
 // Serve static client build files in production
 app.use(express.static(path.join(__dirname, '../client/dist')));
 
@@ -59,16 +88,27 @@ app.get('/api/vapid-public-key', (req, res) => {
   res.json({ publicKey: notifier.vapidPublicKey });
 });
 
+// Fetch list of current player slots for login name selection
+app.get('/api/players', (req, res) => {
+  const state = getState();
+  res.json({
+    players: state.players.map(p => ({ id: p.id, name: p.name }))
+  });
+});
+
 // Login endpoint checking PIN and user status
-app.post('/api/login', (req, res) => {
+app.post('/api/login', async (req, res) => {
   const { name, pin, isGm } = req.body;
   const state = getState();
+  const sessionToken = crypto.randomBytes(16).toString('hex');
 
   if (isGm) {
     if (pin === state.gmPin) {
+      state.gmSessionToken = sessionToken;
+      await saveState();
       return res.json({
         success: true,
-        user: { id: 'gm', name: 'Game Master', role: 'GM', status: 'ALIVE' }
+        user: { id: 'gm', name: 'Game Master', role: 'GM', status: 'ALIVE', sessionToken }
       });
     } else {
       return res.status(401).json({ error: 'Invalid Game Master PIN' });
@@ -85,9 +125,12 @@ app.post('/api/login', (req, res) => {
     return res.status(401).json({ error: 'Invalid PIN' });
   }
 
+  player.sessionToken = sessionToken;
+  await saveState();
+
   return res.json({
     success: true,
-    user: { id: player.id, name: player.name, role: player.role, status: player.status }
+    user: { id: player.id, name: player.name, role: player.role, status: player.status, sessionToken }
   });
 });
 
@@ -109,6 +152,97 @@ app.post('/api/unsubscribe', (req, res) => {
   }
   notifier.removeSubscription(playerId, endpoint);
   res.status(200).json({ success: true });
+});
+
+// Player avatar image upload endpoint (Base64 decodes and stores locally or in railway volume bucket)
+app.post('/api/upload-avatar', async (req, res) => {
+  const { playerId, image } = req.body;
+  if (!playerId || !image) {
+    return res.status(400).json({ error: 'Missing playerId or image data' });
+  }
+
+  const state = getState();
+  const player = state.players.find(p => p.id === playerId);
+  if (!player) {
+    return res.status(404).json({ error: 'Player not found' });
+  }
+
+  try {
+    // Parse base64 data URL (e.g. data:image/png;base64,iVBORw0KGgo...)
+    const matches = image.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+    if (!matches || matches.length !== 3) {
+      return res.status(400).json({ error: 'Invalid image format. Must be base64 Data URL' });
+    }
+
+    const imageType = matches[1];
+    const base64Data = matches[2];
+    const buffer = Buffer.from(base64Data, 'base64');
+
+    // Extract file extension, default to png
+    const extension = imageType.split('/')[1] || 'png';
+    const filename = `avatar_${playerId}_${Date.now()}.${extension}`;
+    let newAvatarUrl = '';
+
+    if (s3Client) {
+      // --- S3 BUCKET UPLOAD ---
+      // Delete old S3 object if it exists to conserve space
+      if (player.avatarUrl && player.avatarUrl.includes(process.env.AWS_ENDPOINT)) {
+        try {
+          const oldFilename = player.avatarUrl.substring(player.avatarUrl.lastIndexOf('/') + 1);
+          await s3Client.send(new DeleteObjectCommand({
+            Bucket: process.env.AWS_BUCKET_NAME,
+            Key: oldFilename
+          }));
+          console.log(`Deleted old avatar object from S3: ${oldFilename}`);
+        } catch (err) {
+          console.error('Failed to delete old S3 avatar object:', err);
+        }
+      }
+
+      // Upload new S3 object
+      await s3Client.send(new PutObjectCommand({
+        Bucket: process.env.AWS_BUCKET_NAME,
+        Key: filename,
+        Body: buffer,
+        ContentType: imageType,
+        ACL: 'public-read'
+      }));
+
+      // Construct public S3 URL
+      newAvatarUrl = `${process.env.AWS_ENDPOINT}/${process.env.AWS_BUCKET_NAME}/${filename}`;
+      console.log(`Uploaded new avatar to S3: ${newAvatarUrl}`);
+    } else {
+      // --- LOCAL FILESYSTEM UPLOAD ---
+      const filepath = path.join(uploadDir, filename);
+
+      // If there is an existing local avatar file, try to clean it up to save space
+      if (player.avatarUrl && player.avatarUrl.startsWith('/uploads/')) {
+        const oldFilename = player.avatarUrl.replace('/uploads/', '');
+        const oldFilepath = path.join(uploadDir, oldFilename);
+        if (fs.existsSync(oldFilepath)) {
+          try {
+            fs.unlinkSync(oldFilepath);
+          } catch (err) {
+            console.error(`Failed to delete old avatar ${oldFilepath}:`, err);
+          }
+        }
+      }
+
+      // Write file
+      fs.writeFileSync(filepath, buffer);
+      newAvatarUrl = `/uploads/${filename}`;
+    }
+
+    // Update state
+    player.avatarUrl = newAvatarUrl;
+    await saveState();
+    broadcastState();
+
+    res.json({ success: true, avatarUrl: newAvatarUrl });
+  } catch (err) {
+    console.error('Error processing avatar upload:', err);
+    res.status(500).json({ error: 'Failed to process and save avatar image' });
+  }
 });
 
 // Fallback to React client routing in production
@@ -157,7 +291,9 @@ function getFilteredState(userId) {
       id: p.id,
       name: p.name,
       status: p.status,
-      role: role
+      role: role,
+      shielded: (userId === 'gm' || p.id === userId) ? !!p.shielded : false,
+      avatarUrl: p.avatarUrl || null
     };
   });
 
@@ -177,7 +313,12 @@ function getFilteredState(userId) {
     }
     if (msg.channelId === 'gm-alerts') {
       // GM alerts can be targeted
-      return !msg.targetId || msg.targetId === userId || (msg.targetId === 'traitors' && isClientTraitor);
+      const target = msg.targetId;
+      return !target 
+        || target === 'all'
+        || target === userId
+        || (target === 'traitors' && isClientTraitor)
+        || (target === 'faithfuls' && clientPlayer.role === 'FAITHFUL');
     }
     if (msg.channelId.startsWith('private-')) {
       const parts = msg.channelId.split('-');
@@ -216,7 +357,9 @@ function getFilteredState(userId) {
       id: clientPlayer.id,
       name: clientPlayer.name,
       role: clientPlayer.role,
-      status: clientPlayer.status
+      status: clientPlayer.status,
+      shielded: !!clientPlayer.shielded,
+      avatarUrl: clientPlayer.avatarUrl || null
     }
   };
 }
@@ -235,7 +378,23 @@ io.on('connection', (socket) => {
   console.log('Client connected:', socket.id);
 
   // Authenticate socket and associate with player ID
-  socket.on('authenticate', async ({ userId }) => {
+  socket.on('authenticate', async ({ userId, sessionToken }) => {
+    const state = getState();
+    let isAuthenticated = false;
+
+    if (userId === 'gm') {
+      isAuthenticated = sessionToken && state.gmSessionToken && sessionToken === state.gmSessionToken;
+    } else {
+      const player = state.players.find(p => p.id === userId);
+      isAuthenticated = player && sessionToken && player.sessionToken && sessionToken === player.sessionToken;
+    }
+
+    if (!isAuthenticated) {
+      console.warn(`Socket authentication failed for userId: ${userId}`);
+      socket.emit('authFailed');
+      return;
+    }
+
     socket.userId = userId;
     
     // Join appropriate socket rooms
@@ -245,7 +404,6 @@ io.on('connection', (socket) => {
     } else {
       socket.join(`player-${userId}`);
       
-      const state = getState();
       const player = state.players.find(p => p.id === userId);
       if (player) {
         if (player.status === 'ALIVE') {
@@ -360,14 +518,26 @@ io.on('connection', (socket) => {
 
   // --- GAME MASTER ACTIONS ---
 
-  // Update player names/PINs
+  // Update player roster (add/remove/update names/PINs)
   socket.on('gmUpdatePlayers', async ({ players }) => {
     if (socket.userId !== 'gm') return;
     const state = getState();
-    state.players = state.players.map(p => {
-      const updated = players.find(up => up.id === p.id);
-      return updated ? { ...p, name: updated.name, pin: updated.pin } : p;
+    
+    // Reconstruct player list supporting additions and removals
+    state.players = players.map(p => {
+      const existing = state.players.find(ep => ep.id === p.id);
+      return {
+        id: p.id,
+        name: p.name.trim(),
+        pin: p.pin.trim(),
+        role: existing ? existing.role : 'UNKNOWN',
+        status: existing ? existing.status : 'ALIVE',
+        shielded: existing ? !!existing.shielded : false,
+        sessionToken: existing ? existing.sessionToken : null,
+        avatarUrl: existing ? existing.avatarUrl : null
+      };
     });
+    
     await saveState();
     broadcastState();
   });
@@ -602,6 +772,38 @@ io.on('connection', (socket) => {
     });
   });
 
+  // Toggle player shield status
+  socket.on('gmToggleShield', async ({ playerId }) => {
+    if (socket.userId !== 'gm') return;
+    const state = getState();
+    const player = state.players.find(p => p.id === playerId);
+    if (!player) return;
+
+    player.shielded = !player.shielded;
+    
+    // Add dramatic alert message
+    state.messages.push({
+      id: 'alert_' + Date.now(),
+      senderId: 'gm',
+      senderName: 'Game Master',
+      channelId: 'gm-alerts',
+      text: player.shielded
+        ? `🛡️ A Sacred Shield has been bestowed upon a player from the Tower. They are protected from murder.`
+        : `🛡️ The Sacred Shield has faded from a player.`,
+      timestamp: new Date().toISOString()
+    });
+
+    await saveState();
+    broadcastState();
+
+    // Trigger push notification to targeted player
+    notifier.sendPushNotification(playerId, {
+      title: player.shielded ? 'You are Shielded' : 'Shield Faded',
+      body: player.shielded ? 'You are protected from Traitor murder tonight.' : 'Your protective shield has faded.',
+      tag: 'shield-status'
+    });
+  });
+
   // Finalize voting (tabulates votes, GM can review results before applying)
   socket.on('gmFinalizeVoting', async () => {
     if (socket.userId !== 'gm') return;
@@ -643,7 +845,12 @@ io.on('connection', (socket) => {
       resultText = `Voting closed. No votes were cast.`;
     } else if (candidates.length === 1) {
       const victim = state.players.find(p => p.id === candidates[0]);
-      resultText = `Voting finalized. ${victim.name} received the most votes (${maxVotes}) and has been ${action}!`;
+      if (state.votingType === 'MURDER' && victim.shielded) {
+        resultText = `🔊 NIGHTFALL MURDER ATTEMPTED! The Traitors targeted ${victim.name}, but their blade shattered against the Sacred Shield! ${victim.name} survives the night.`;
+        victim.shielded = false; // consume shield
+      } else {
+        resultText = `Voting finalized. ${victim.name} received the most votes (${maxVotes}) and has been ${action}!`;
+      }
     } else {
       const names = candidates.map(id => state.players.find(p => p.id === id).name).join(' & ');
       resultText = `Voting finalized. TIE between: ${names} (${maxVotes} votes each). GM must decide the tiebreaker!`;

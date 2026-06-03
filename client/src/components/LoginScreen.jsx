@@ -1,10 +1,19 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff, ShieldAlert, KeyRound } from 'lucide-react';
 
-const STATIC_PLAYER_SLOTS = [
-  'Hayli', 'Jen', 'Alix', 'Tanner',
-  'Bryce', 'Kelsie', 'Alyssa', 'Naeim',
-  'Matt', 'Allyson', 'Sarah', 'Derek'
+const DEFAULT_PLAYER_SLOTS = [
+  { id: 'p1', name: 'Hayli' },
+  { id: 'p2', name: 'Jen' },
+  { id: 'p3', name: 'Alix' },
+  { id: 'p4', name: 'Tanner' },
+  { id: 'p5', name: 'Bryce' },
+  { id: 'p6', name: 'Kelsie' },
+  { id: 'p7', name: 'Alyssa' },
+  { id: 'p8', name: 'Naeim' },
+  { id: 'p9', name: 'Matt' },
+  { id: 'p10', name: 'Allyson' },
+  { id: 'p11', name: 'Sarah' },
+  { id: 'p12', name: 'Derek' }
 ];
 
 function LoginScreen({ onLogin }) {
@@ -13,6 +22,20 @@ function LoginScreen({ onLogin }) {
   const [pin, setPin] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [players, setPlayers] = useState(DEFAULT_PLAYER_SLOTS);
+
+  React.useEffect(() => {
+    fetch('/api/players')
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.players) {
+          setPlayers(data.players);
+        }
+      })
+      .catch(err => {
+        console.error('Failed to load player slots from server:', err);
+      });
+  }, []);
 
   const handleKeyClick = (num) => {
     setError('');
@@ -136,10 +159,10 @@ function LoginScreen({ onLogin }) {
                 <KeyRound size={14} /> Select Your Identity
               </h3>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
-                {STATIC_PLAYER_SLOTS.map((name) => (
+                {players.map((p) => (
                   <button
-                    key={name}
-                    onClick={() => selectPlayer(name)}
+                    key={p.id}
+                    onClick={() => selectPlayer(p.name)}
                     className="gothic-btn-muted"
                     style={{ 
                       padding: '12px 6px', 
@@ -153,7 +176,7 @@ function LoginScreen({ onLogin }) {
                       whiteSpace: 'nowrap'
                     }}
                   >
-                    {name}
+                    {p.name}
                   </button>
                 ))}
               </div>

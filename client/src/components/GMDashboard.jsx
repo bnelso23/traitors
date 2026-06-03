@@ -49,6 +49,54 @@ function GMDashboard({ gameState, emitSocket }) {
     setEditPlayers(prev => prev.map(p => p.id === id ? { ...p, [field]: value } : p));
   };
 
+  const handleAddPlayerSlot = () => {
+    setEditPlayers(prev => [
+      ...prev,
+      {
+        id: 'p_new_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+        name: '',
+        pin: Math.floor(1000 + Math.random() * 9000).toString()
+      }
+    ]);
+  };
+
+  const handleRemovePlayerSlot = (id) => {
+    setEditPlayers(prev => prev.filter(p => p.id !== id));
+  };
+
+  const handleGMAvatarChange = async (playerId, e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      try {
+        const base64Data = reader.result;
+        const res = await fetch('/api/upload-avatar', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            playerId: playerId,
+            image: base64Data
+          })
+        });
+
+        const data = await res.json();
+        if (res.ok && data.success) {
+          // Portrait updated successfully, socket broadcast will sync state automatically
+        } else {
+          alert(data.error || 'Failed to upload image.');
+        }
+      } catch (err) {
+        console.error('GM avatar upload error:', err);
+        alert('Network error. Failed to upload avatar.');
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
   const toggleTraitorSelection = (id) => {
     setSelectedTraitors(prev => 
       prev.includes(id) ? prev.filter(tid => tid !== id) : [...prev, id]
@@ -203,9 +251,25 @@ function GMDashboard({ gameState, emitSocket }) {
                       style={{ padding: '6px 8px', fontSize: '0.8rem', width: '60px', textAlign: 'center' }}
                       placeholder="PIN"
                     />
+                    <button
+                      onClick={() => handleRemovePlayerSlot(p.id)}
+                      className="gothic-btn-crimson gothic-btn"
+                      style={{ padding: '6px 10px', fontSize: '0.7rem', flexShrink: 0, height: '32px', borderRadius: '4px' }}
+                      title="Remove Slot"
+                    >
+                      ✕
+                    </button>
                   </div>
                 ))}
               </div>
+
+              <button
+                onClick={handleAddPlayerSlot}
+                className="gothic-btn-muted gothic-btn"
+                style={{ width: '100%', padding: '8px', fontSize: '0.75rem', marginBottom: '12px' }}
+              >
+                + Add Player Slot
+              </button>
 
               <div style={{ display: 'flex', gap: '10px' }}>
                 <button onClick={handleSaveSetup} className="gothic-btn" style={{ flex: 1, padding: '10px', fontSize: '0.75rem' }}>
@@ -271,8 +335,71 @@ function GMDashboard({ gameState, emitSocket }) {
                         borderLeft: isAlive ? (isTraitor ? '4px solid var(--crimson)' : '4px solid #1e293b') : '4px solid var(--text-muted)'
                       }}
                     >
-                      <div>
-                        <span style={{ fontSize: '0.85rem', fontWeight: 'bold' }}>{p.name}</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <label 
+                          style={{ 
+                            cursor: 'pointer', 
+                            display: 'block', 
+                            flexShrink: 0,
+                            position: 'relative'
+                          }}
+                          title="Click to upload/change player portrait"
+                        >
+                          <div style={{
+                            width: '36px',
+                            height: '36px',
+                            borderRadius: '50%',
+                            border: isAlive ? (isTraitor ? '1.5px solid var(--crimson)' : '1.5px solid var(--gold)') : '1.5px solid var(--text-muted)',
+                            background: 'var(--bg-primary)',
+                            overflow: 'hidden',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            boxShadow: '0 0 5px rgba(0, 0, 0, 0.5)'
+                          }}>
+                            {p.avatarUrl ? (
+                              <img 
+                                src={p.avatarUrl} 
+                                alt={p.name} 
+                                style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                              />
+                            ) : (
+                              <span style={{ fontSize: '0.85rem', color: isAlive ? 'var(--gold)' : 'var(--text-secondary)', fontWeight: 'bold', fontFamily: 'var(--font-serif)' }}>
+                                {p.name ? p.name[0] : '?'}
+                              </span>
+                            )}
+                          </div>
+                          <input 
+                            type="file" 
+                            accept="image/*" 
+                            onChange={(e) => handleGMAvatarChange(p.id, e)} 
+                            style={{ display: 'none' }} 
+                          />
+                        </label>
+
+                        <div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <span style={{ fontSize: '0.85rem', fontWeight: 'bold' }}>{p.name}</span>
+                          {p.shielded && (
+                            <span 
+                              style={{ 
+                                fontSize: '0.55rem', 
+                                backgroundColor: 'rgba(197, 160, 40, 0.15)', 
+                                border: '1px solid var(--gold)', 
+                                color: 'var(--gold)', 
+                                padding: '1px 4px', 
+                                borderRadius: '3px',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '2px',
+                                textTransform: 'uppercase',
+                                fontWeight: 'bold'
+                              }}
+                            >
+                              🛡️ Shielded
+                            </span>
+                          )}
+                        </div>
                         <div style={{ display: 'flex', gap: '6px', marginTop: '2px' }}>
                           <span className={`player-badge ${isTraitor ? 'badge-traitor' : 'badge-faithful'}`} style={{ fontSize: '0.55rem', padding: '1px 4px' }}>
                             {p.role}
@@ -282,15 +409,39 @@ function GMDashboard({ gameState, emitSocket }) {
                           </span>
                         </div>
                       </div>
+                    </div>
 
-                      <button
-                        onClick={() => handleToggleStatus(p.id, p.status)}
-                        className={`gothic-btn ${isAlive ? 'gothic-btn-crimson' : ''}`}
-                        style={{ padding: '6px 10px', fontSize: '0.65rem', height: 'fit-content', borderRadius: '4px' }}
-                      >
-                        {isAlive ? <Skull size={10} /> : <RefreshCw size={10} />}
-                        <span style={{ marginLeft: '4px' }}>{isAlive ? 'Kill' : 'Revive'}</span>
-                      </button>
+                      <div style={{ display: 'flex', gap: '6px' }}>
+                        {isAlive && (
+                          <button
+                            onClick={() => emitSocket('gmToggleShield', { playerId: p.id })}
+                            className="gothic-btn"
+                            style={{ 
+                              padding: '6px 10px', 
+                              fontSize: '0.65rem', 
+                              height: 'fit-content', 
+                              borderRadius: '4px',
+                              border: p.shielded ? '1px solid var(--gold)' : 'var(--border-dark)',
+                              background: p.shielded ? 'rgba(197, 160, 40, 0.15)' : 'rgba(25, 24, 29, 0.6)'
+                            }}
+                          >
+                            🛡️ {p.shielded ? 'Remove' : 'Shield'}
+                          </button>
+                        )}
+                        <button
+                          onClick={() => {
+                            if (isAlive && p.shielded && !window.confirm("WARNING: This player is shielded from murder! Are you sure you want to manually eliminate them?")) {
+                              return;
+                            }
+                            handleToggleStatus(p.id, p.status);
+                          }}
+                          className={`gothic-btn ${isAlive ? 'gothic-btn-crimson' : ''}`}
+                          style={{ padding: '6px 10px', fontSize: '0.65rem', height: 'fit-content', borderRadius: '4px' }}
+                        >
+                          {isAlive ? <Skull size={10} /> : <RefreshCw size={10} />}
+                          <span style={{ marginLeft: '4px' }}>{isAlive ? 'Kill' : 'Revive'}</span>
+                        </button>
+                      </div>
                     </div>
                   );
                 })}
