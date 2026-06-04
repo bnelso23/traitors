@@ -121,12 +121,37 @@ app.get('/defaults/:filename', async (req, res, next) => {
   }
 });
 
+// Proxy route to serve paintings from S3 (if enabled)
+app.get('/paintings/:filename', async (req, res, next) => {
+  if (s3Enabled && s3Client) {
+    const { filename } = req.params;
+    try {
+      const response = await s3Client.send(new GetObjectCommand({
+        Bucket: bucketName,
+        Key: `paintings/${filename}`
+      }));
+      res.setHeader('Content-Type', response.ContentType || 'image/jpeg');
+      if (response.ContentLength) {
+        res.setHeader('Content-Length', response.ContentLength);
+      }
+      res.setHeader('Cache-Control', 'public, max-age=31536000');
+      response.Body.pipe(res);
+    } catch (err) {
+      console.warn(`S3 painting get error for ${filename}, falling back to local files:`, err.message);
+      next();
+    }
+  } else {
+    next();
+  }
+});
+
 // Configure uploads directory (using Railway volume if attached, else local uploads folder)
 const uploadDir = process.env.RAILWAY_VOLUME_MOUNT_PATH || path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
 app.use('/uploads', express.static(uploadDir));
+app.use('/paintings', express.static(path.join(__dirname, 'public/paintings')));
 
 // Serve static client build files in production
 app.use(express.static(path.join(__dirname, '../client/dist')));
@@ -144,6 +169,21 @@ app.get('/api/players', (req, res) => {
   res.json({
     players: state.players.map(p => ({ id: p.id, name: p.name }))
   });
+});
+
+// Fetch list of paintings for the gallery
+app.get('/api/paintings', (req, res) => {
+  const metadataPath = path.join(__dirname, 'data/paintings.json');
+  if (fs.existsSync(metadataPath)) {
+    try {
+      const data = fs.readFileSync(metadataPath, 'utf8');
+      return res.json(JSON.parse(data));
+    } catch (err) {
+      console.error('Failed to read paintings metadata:', err);
+      return res.status(500).json({ error: 'Failed to load paintings metadata' });
+    }
+  }
+  res.json([]);
 });
 
 // Login endpoint checking PIN and user status

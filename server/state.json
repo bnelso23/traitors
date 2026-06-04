@@ -4,7 +4,7 @@
   "gameStatus": "ACTIVE",
   "chatsEnabled": true,
   "privateChatsEnabled": true,
-  "traitorsChatEnabled": false,
+  "traitorsChatEnabled": true,
   "votingActive": false,
   "votingType": "EXILE",
   "votingOptions": [],
@@ -17,7 +17,7 @@
       "role": "FAITHFUL",
       "status": "ALIVE",
       "shielded": false,
-      "sessionToken": "08dfc915a706745a2a6a295af5f4693e"
+      "sessionToken": "57c48b89824d44187db41d339571dc67"
     },
     {
       "id": "p2",
@@ -430,8 +430,16 @@
       "channelId": "private-p2-p3",
       "text": "df",
       "timestamp": "2026-06-03T05:46:46.559Z"
+    },
+    {
+      "id": "alert_1780466125682",
+      "senderId": "gm",
+      "senderName": "Game Master",
+      "channelId": "gm-alerts",
+      "text": "🔊 SUNRISE. Castle lounges are now open. You may speak.",
+      "timestamp": "2026-06-03T05:55:25.682Z"
     }
   ],
   "groups": [],
-  "gmSessionToken": "a59f9883b2ffc02b7fd7e9ea2e975502"
+  "gmSessionToken": "29abc0f1fbce6f5f5893d0a26b151622"
 }

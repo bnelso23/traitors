@@ -14,6 +14,7 @@ export default defineConfig({
     proxy: {
       '/api': 'http://localhost:3001',
       '/uploads': 'http://localhost:3001',
+      '/paintings': 'http://localhost:3001',
       '/defaults': {
         target: 'http://localhost:3001',
         bypass: (req, res, proxyOptions) => {

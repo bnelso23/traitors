@@ -1,0 +1,324 @@
+[
+  {
+    "id": "painting_1",
+    "artist": "Abraham Storck",
+    "title": "Walfang Im Polarmeer",
+    "filename": "abraham_storck_-_walfang_im_polarmeer.jpg",
+    "url": "/paintings/abraham_storck_-_walfang_im_polarmeer.jpg"
+  },
+  {
+    "id": "painting_2",
+    "artist": "Adolph Menzel",
+    "title": "Flute Concert With Frederick The Great In Sanssouci 1850 1852",
+    "filename": "adolph_menzel_-_flute_concert_with_frederick_the_great_in_sanssouci_1850_1852.jpg",
+    "url": "/paintings/adolph_menzel_-_flute_concert_with_frederick_the_great_in_sanssouci_1850_1852.jpg"
+  },
+  {
+    "id": "painting_3",
+    "artist": "Albert Anker",
+    "title": "Das Schulexamen",
+    "filename": "albert_anker_-_das_schulexamen.jpg",
+    "url": "/paintings/albert_anker_-_das_schulexamen.jpg"
+  },
+  {
+    "id": "painting_4",
+    "artist": "Albert Anker",
+    "title": "Boy Writing With His Sister 1875",
+    "filename": "albert_anker_-_boy_writing_with_his_sister_1875.jpg",
+    "url": "/paintings/albert_anker_-_boy_writing_with_his_sister_1875.jpg"
+  },
+  {
+    "id": "painting_5",
+    "artist": "Albin Egger Lienz",
+    "title": "Die Familie",
+    "filename": "albin_egger_lienz_-_die_familie.jpg",
+    "url": "/paintings/albin_egger_lienz_-_die_familie.jpg"
+  },
+  {
+    "id": "painting_6",
+    "artist": "Albin Egger Lienz",
+    "title": "Lunch The Soup Version II 1910",
+    "filename": "albin_egger_lienz_-_lunch_the_soup_version_ii_1910.jpg",
+    "url": "/paintings/albin_egger_lienz_-_lunch_the_soup_version_ii_1910.jpg"
+  },
+  {
+    "id": "painting_7",
+    "artist": "Carl Christian Vogel Von Vogelstein",
+    "title": "Let The Little Children Come To Me",
+    "filename": "carl_christian_vogel_von_vogelstein_-_let_the_little_children_come_to_me.jpg",
+    "url": "/paintings/carl_christian_vogel_von_vogelstein_-_let_the_little_children_come_to_me.jpg"
+  },
+  {
+    "id": "painting_8",
+    "artist": "Edmund Blair Leighton",
+    "title": "The Accolade 1901",
+    "filename": "edmund_blair_leighton_-_the_accolade_1901.jpg",
+    "url": "/paintings/edmund_blair_leighton_-_the_accolade_1901.jpg"
+  },
+  {
+    "id": "painting_9",
+    "artist": "Ferdinand Victor Eugene Delacroix",
+    "title": "Le 28 Juillet La Libert Guidant Le Peuple",
+    "filename": "ferdinand_victor_eugene_delacroix_-_le_28_juillet_la_libert_guidant_le_peuple.jpg",
+    "url": "/paintings/ferdinand_victor_eugene_delacroix_-_le_28_juillet_la_libert_guidant_le_peuple.jpg"
+  },
+  {
+    "id": "painting_10",
+    "artist": "Francisco De Goya",
+    "title": "Saturn Devouring His Son",
+    "filename": "francisco_de_goya_-_saturn_devouring_his_son.jpg",
+    "url": "/paintings/francisco_de_goya_-_saturn_devouring_his_son.jpg"
+  },
+  {
+    "id": "painting_11",
+    "artist": "Frans Snyders",
+    "title": "Still Life With A Swan",
+    "filename": "frans_snyders_-_still_life_with_a_swan.jpg",
+    "url": "/paintings/frans_snyders_-_still_life_with_a_swan.jpg"
+  },
+  {
+    "id": "painting_12",
+    "artist": "Frederick George Cotman",
+    "title": "One Of The Family",
+    "filename": "frederick_george_cotman_-_one_of_the_family.jpg",
+    "url": "/paintings/frederick_george_cotman_-_one_of_the_family.jpg"
+  },
+  {
+    "id": "painting_13",
+    "artist": "Gustave Dore",
+    "title": "The Valley Of Tears 1883",
+    "filename": "gustave_dore_-_the_valley_of_tears_1883.jpg",
+    "url": "/paintings/gustave_dore_-_the_valley_of_tears_1883.jpg"
+  },
+  {
+    "id": "painting_14",
+    "artist": "Hans Holbein Der Jngere",
+    "title": "The Ambassadors",
+    "filename": "hans_holbein_der_jngere_-_the_ambassadors.jpg",
+    "url": "/paintings/hans_holbein_der_jngere_-_the_ambassadors.jpg"
+  },
+  {
+    "id": "painting_15",
+    "artist": "Hans Zatzka",
+    "title": "Untitled Garden Scene",
+    "filename": "hans_zatzka_-_untitled_garden_scene.jpg",
+    "url": "/paintings/hans_zatzka_-_untitled_garden_scene.jpg"
+  },
+  {
+    "id": "painting_16",
+    "artist": "Henrietta Rae",
+    "title": "Hylas And The Water Nymphs",
+    "filename": "henrietta_rae_-_hylas_and_the_water_nymphs.jpg",
+    "url": "/paintings/henrietta_rae_-_hylas_and_the_water_nymphs.jpg"
+  },
+  {
+    "id": "painting_17",
+    "artist": "Henry Scott Tuke",
+    "title": "Lovers Of The Sun 1923",
+    "filename": "henry_scott_tuke_-_lovers_of_the_sun_1923.jpg",
+    "url": "/paintings/henry_scott_tuke_-_lovers_of_the_sun_1923.jpg"
+  },
+  {
+    "id": "painting_18",
+    "artist": "Hermann Stenner",
+    "title": "Kaffeegarten Am Ammersee",
+    "filename": "hermann_stenner_-_kaffeegarten_am_ammersee.jpg",
+    "url": "/paintings/hermann_stenner_-_kaffeegarten_am_ammersee.jpg"
+  },
+  {
+    "id": "painting_19",
+    "artist": "James Archer",
+    "title": "The Picnic",
+    "filename": "james_archer_-_the_picnic.jpg",
+    "url": "/paintings/james_archer_-_the_picnic.jpg"
+  },
+  {
+    "id": "painting_20",
+    "artist": "Jean Baptiste Mauzaisse",
+    "title": "Battle Of Fleurus 26th June 1794 1837",
+    "filename": "jean_baptiste_mauzaisse_-_battle_of_fleurus_26th_june_1794_1837.jpg",
+    "url": "/paintings/jean_baptiste_mauzaisse_-_battle_of_fleurus_26th_june_1794_1837.jpg"
+  },
+  {
+    "id": "painting_21",
+    "artist": "Jean Baptiste Huet",
+    "title": "A Dog Attacking Geese 1769",
+    "filename": "jean_baptiste_huet_-_a_dog_attacking_geese_1769.jpg",
+    "url": "/paintings/jean_baptiste_huet_-_a_dog_attacking_geese_1769.jpg"
+  },
+  {
+    "id": "painting_22",
+    "artist": "Jean Baptiste Huet",
+    "title": "Pastoral Scene",
+    "filename": "jean_baptiste_huet_-_pastoral_scene.jpg",
+    "url": "/paintings/jean_baptiste_huet_-_pastoral_scene.jpg"
+  },
+  {
+    "id": "painting_23",
+    "artist": "John William Waterhouse",
+    "title": "Hylas Und Die Nymphen",
+    "filename": "john_william_waterhouse_-_hylas_und_die_nymphen.jpg",
+    "url": "/paintings/john_william_waterhouse_-_hylas_und_die_nymphen.jpg"
+  },
+  {
+    "id": "painting_24",
+    "artist": "John William Waterhouse",
+    "title": "The Lady Of Shalott",
+    "filename": "john_william_waterhouse_-_the_lady_of_shalott.jpg",
+    "url": "/paintings/john_william_waterhouse_-_the_lady_of_shalott.jpg"
+  },
+  {
+    "id": "painting_25",
+    "artist": "Joseph Noel Paton",
+    "title": "The Quarrel Of Oberon And Titania",
+    "filename": "joseph_noel_paton_-_the_quarrel_of_oberon_and_titania.jpg",
+    "url": "/paintings/joseph_noel_paton_-_the_quarrel_of_oberon_and_titania.jpg"
+  },
+  {
+    "id": "painting_26",
+    "artist": "Jules Joseph Meynier",
+    "title": "Christ Asleep In His Boat",
+    "filename": "jules_joseph_meynier_-_christ_asleep_in_his_boat.jpg",
+    "url": "/paintings/jules_joseph_meynier_-_christ_asleep_in_his_boat.jpg"
+  },
+  {
+    "id": "painting_27",
+    "artist": "Leon Augustin Lhermitte",
+    "title": "Haymaking",
+    "filename": "leon_augustin_lhermitte_-_haymaking.jpg",
+    "url": "/paintings/leon_augustin_lhermitte_-_haymaking.jpg"
+  },
+  {
+    "id": "painting_28",
+    "artist": "Louis Leopold Boilly",
+    "title": "Caricature Series Of Ridiculous Expressions Reunion Of 35 Heads Of Expression P",
+    "filename": "louis_leopold_boilly_-_caricature_series_of_ridiculous_expressions_reunion_of_35_heads_of_expression_p.jpg",
+    "url": "/paintings/louis_leopold_boilly_-_caricature_series_of_ridiculous_expressions_reunion_of_35_heads_of_expression_p.jpg"
+  },
+  {
+    "id": "painting_29",
+    "artist": "Unknown",
+    "title": "Loving Vincent",
+    "filename": "unknown_-_loving_vincent.webp",
+    "url": "/paintings/unknown_-_loving_vincent.webp"
+  },
+  {
+    "id": "painting_30",
+    "artist": "Luca Giordano",
+    "title": "Saint Michael The Archangel Ca 1663",
+    "filename": "luca_giordano_-_saint_michael_the_archangel_ca_1663.jpg",
+    "url": "/paintings/luca_giordano_-_saint_michael_the_archangel_ca_1663.jpg"
+  },
+  {
+    "id": "painting_31",
+    "artist": "Matthias Grunewald",
+    "title": "The Crucifixion From The Isenheim Altarpiece C1512 15",
+    "filename": "matthias_grunewald_-_the_crucifixion_from_the_isenheim_altarpiece_c1512_15.jpg",
+    "url": "/paintings/matthias_grunewald_-_the_crucifixion_from_the_isenheim_altarpiece_c1512_15.jpg"
+  },
+  {
+    "id": "painting_32",
+    "artist": "Michelangelo Merisi Caravaggio",
+    "title": "Judith Beheading Holofernes",
+    "filename": "michelangelo_merisi_caravaggio_-_judith_beheading_holofernes.jpg",
+    "url": "/paintings/michelangelo_merisi_caravaggio_-_judith_beheading_holofernes.jpg"
+  },
+  {
+    "id": "painting_33",
+    "artist": "Michelangelo Merisi Caravaggio",
+    "title": "The Entombment Of Christ",
+    "filename": "michelangelo_merisi_caravaggio_-_the_entombment_of_christ.jpg",
+    "url": "/paintings/michelangelo_merisi_caravaggio_-_the_entombment_of_christ.jpg"
+  },
+  {
+    "id": "painting_34",
+    "artist": "Michelangelo Merisi Caravaggio",
+    "title": "The Incredulity Of St Thomas 1602 03",
+    "filename": "michelangelo_merisi_caravaggio_-_the_incredulity_of_st_thomas_1602_03.jpg",
+    "url": "/paintings/michelangelo_merisi_caravaggio_-_the_incredulity_of_st_thomas_1602_03.jpg"
+  },
+  {
+    "id": "painting_35",
+    "artist": "Michelangelo Merisi Caravaggio",
+    "title": "The Taking Of Christ",
+    "filename": "michelangelo_merisi_caravaggio_-_the_taking_of_christ.jpg",
+    "url": "/paintings/michelangelo_merisi_caravaggio_-_the_taking_of_christ.jpg"
+  },
+  {
+    "id": "painting_36",
+    "artist": "Pierre Auguste Renoir",
+    "title": "Luncheon Of The Boating Party",
+    "filename": "pierre_auguste_renoir_-_luncheon_of_the_boating_party.jpg",
+    "url": "/paintings/pierre_auguste_renoir_-_luncheon_of_the_boating_party.jpg"
+  },
+  {
+    "id": "painting_37",
+    "artist": "Raphael",
+    "title": "The School Of Athens From The Stanza Della Segnatura 1509 10",
+    "filename": "raphael_-_the_school_of_athens_from_the_stanza_della_segnatura_1509_10.jpg",
+    "url": "/paintings/raphael_-_the_school_of_athens_from_the_stanza_della_segnatura_1509_10.jpg"
+  },
+  {
+    "id": "painting_38",
+    "artist": "Raphael",
+    "title": "Disputation Of The Holy Sacrament La Disputa Del Sacramento 1509 1510",
+    "filename": "raphael_-_disputation_of_the_holy_sacrament_la_disputa_del_sacramento_1509_1510.jpg",
+    "url": "/paintings/raphael_-_disputation_of_the_holy_sacrament_la_disputa_del_sacramento_1509_1510.jpg"
+  },
+  {
+    "id": "painting_39",
+    "artist": "Rembrandt Van Rijn",
+    "title": "Return Of The Prodigal Son",
+    "filename": "rembrandt_van_rijn_-_return_of_the_prodigal_son.jpg",
+    "url": "/paintings/rembrandt_van_rijn_-_return_of_the_prodigal_son.jpg"
+  },
+  {
+    "id": "painting_40",
+    "artist": "Rembrandt Van Rijn",
+    "title": "The Nightwatch",
+    "filename": "rembrandt_van_rijn_-_the_nightwatch.jpg",
+    "url": "/paintings/rembrandt_van_rijn_-_the_nightwatch.jpg"
+  },
+  {
+    "id": "painting_41",
+    "artist": "Sandro Botticelli",
+    "title": "La Primavera",
+    "filename": "sandro_botticelli_-_la_primavera.jpg",
+    "url": "/paintings/sandro_botticelli_-_la_primavera.jpg"
+  },
+  {
+    "id": "painting_42",
+    "artist": "Sofonisba Anguissola",
+    "title": "Game Of Chess 1555",
+    "filename": "sofonisba_anguissola_-_game_of_chess_1555.jpg",
+    "url": "/paintings/sofonisba_anguissola_-_game_of_chess_1555.jpg"
+  },
+  {
+    "id": "painting_43",
+    "artist": "Stefano Pieri",
+    "title": "The Deposition Of Christ",
+    "filename": "stefano_pieri_-_the_deposition_of_christ.jpg",
+    "url": "/paintings/stefano_pieri_-_the_deposition_of_christ.jpg"
+  },
+  {
+    "id": "painting_44",
+    "artist": "Vasili Grigorevich Perov",
+    "title": "Hunters 1816",
+    "filename": "vasili_grigorevich_perov_-_hunters_1816.jpg",
+    "url": "/paintings/vasili_grigorevich_perov_-_hunters_1816.jpg"
+  },
+  {
+    "id": "painting_45",
+    "artist": "William Adolphe Bouguereau",
+    "title": "Dante And Virgil",
+    "filename": "william_adolphe_bouguereau_-_dante_and_virgil.jpg",
+    "url": "/paintings/william_adolphe_bouguereau_-_dante_and_virgil.jpg"
+  },
+  {
+    "id": "painting_46",
+    "artist": "Julien Dupre",
+    "title": "Time Of Milking",
+    "filename": "julien_dupre_-_time_of_milking.jpg",
+    "url": "/paintings/julien_dupre_-_time_of_milking.jpg"
+  }
+]

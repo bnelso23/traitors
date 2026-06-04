@@ -4,8 +4,9 @@ import LoginScreen from './components/LoginScreen';
 import PlayerDashboard from './components/PlayerDashboard';
 import GMDashboard from './components/GMDashboard';
 import InstallPrompt from './components/InstallPrompt';
-import { Shield, MessageSquare, Award, LogOut, BellRing, User, Settings } from 'lucide-react';
+import { Shield, MessageSquare, Award, LogOut, BellRing, User, Settings, Image } from 'lucide-react';
 import PlayerAvatar from './components/PlayerAvatar';
+import GalleryView from './components/GalleryView';
 
 // Synthesize gothic sounds using browser Web Audio API
 export const playSound = (type) => {
@@ -96,7 +97,7 @@ function App() {
   });
   
   const [gameState, setGameState] = useState(null);
-  const [activeTab, setActiveTab] = useState('dashboard'); // dashboard, chat, voting
+  const [activeTab, setActiveTab] = useState('dashboard'); // dashboard, chat, voting, gallery
   const [toast, setToast] = useState(null);
   const [unreadAlerts, setUnreadAlerts] = useState(false);
   const socketRef = useRef(null);
@@ -467,7 +468,7 @@ function App() {
       </header>
 
       {/* Main App Page Routing */}
-      <main className={`app-content ${activeTab === 'chat' ? 'no-scroll' : ''}`}>
+      <main className={`app-content ${(activeTab === 'chat' || activeTab === 'gallery') ? 'no-scroll' : ''}`}>
         {!user ? (
           <>
             <LoginScreen onLogin={handleLogin} />
@@ -504,6 +505,9 @@ function App() {
                     emitSocket={emitSocket}
                     initialTab="voting"
                   />
+                )}
+                {activeTab === 'gallery' && (
+                  <GalleryView />
                 )}
               </>
             ) : (
@@ -553,6 +557,13 @@ function App() {
           >
             <Award size={18} style={{ marginBottom: '4px' }} />
             Roundtable
+          </button>
+          <button 
+            className={`footer-tab ${activeTab === 'gallery' ? 'active' : ''}`}
+            onClick={() => setActiveTab('gallery')}
+          >
+            <Image size={18} style={{ marginBottom: '4px' }} />
+            Gallery
           </button>
         </footer>
       )}

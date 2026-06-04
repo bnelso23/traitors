@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, Users, Skull, MessageSquare, Volume2, KeyRound, Award, RefreshCw, ChevronDown, ChevronUp, Bell, Check, Send, Lock, Eye } from 'lucide-react';
+import { Play, Users, Skull, MessageSquare, Volume2, KeyRound, Award, RefreshCw, ChevronDown, ChevronUp, Bell, Check, Send, Lock, Eye, Image } from 'lucide-react';
 import PlayerAvatar from './PlayerAvatar';
+import GalleryView from './GalleryView';
 
 function GMDashboard({ gameState, emitSocket }) {
   const [activeSection, setActiveSection] = useState('players'); // players, chats, voting, broadcast, setup
@@ -191,7 +192,7 @@ function GMDashboard({ gameState, emitSocket }) {
       </div>
 
       {/* Tab Selectors */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '4px', background: 'rgba(25, 24, 29, 0.6)', border: 'var(--border-dark)', borderRadius: '4px', padding: '2px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '4px', background: 'rgba(25, 24, 29, 0.6)', border: 'var(--border-dark)', borderRadius: '4px', padding: '2px' }}>
         <button 
           onClick={() => setActiveSection('players')} 
           className={`gothic-btn-muted ${activeSection === 'players' ? 'text-gold' : ''}`}
@@ -219,6 +220,13 @@ function GMDashboard({ gameState, emitSocket }) {
           style={{ padding: '8px 4px', fontSize: '0.65rem', border: activeSection === 'broadcast' ? '1px solid var(--gold-dark)' : 'none' }}
         >
           Alert
+        </button>
+        <button 
+          onClick={() => setActiveSection('gallery')} 
+          className={`gothic-btn-muted ${activeSection === 'gallery' ? 'text-gold' : ''}`}
+          style={{ padding: '8px 4px', fontSize: '0.65rem', border: activeSection === 'gallery' ? '1px solid var(--gold-dark)' : 'none' }}
+        >
+          Gallery
         </button>
       </div>
 
@@ -748,17 +756,24 @@ function GMDashboard({ gameState, emitSocket }) {
         </div>
       )}
 
+      {/* SECTION: GALLERY VIEW */}
+      {activeSection === 'gallery' && (
+        <GalleryView />
+      )}
+
       {/* DANGER ZONE RESET BUTTON */}
-      <div className="gothic-panel" style={{ borderTopColor: 'var(--crimson-glow)', borderStyle: 'dashed' }}>
-        <h4 style={{ fontSize: '0.75rem', color: 'var(--crimson-glow)', marginBottom: '8px' }}>Danger Zone</h4>
-        <button 
-          onClick={handleResetGame}
-          className="gothic-btn gothic-btn-crimson" 
-          style={{ width: '100%', padding: '10px', fontSize: '0.7rem' }}
-        >
-          <RefreshCw size={12} style={{ marginRight: '6px' }} /> Reset Game Lobby
-        </button>
-      </div>
+      {activeSection !== 'gallery' && (
+        <div className="gothic-panel" style={{ borderTopColor: 'var(--crimson-glow)', borderStyle: 'dashed' }}>
+          <h4 style={{ fontSize: '0.75rem', color: 'var(--crimson-glow)', marginBottom: '8px' }}>Danger Zone</h4>
+          <button 
+            onClick={handleResetGame}
+            className="gothic-btn gothic-btn-crimson" 
+            style={{ width: '100%', padding: '10px', fontSize: '0.7rem' }}
+          >
+            <RefreshCw size={12} style={{ marginRight: '6px' }} /> Reset Game Lobby
+          </button>
+        </div>
+      )}
 
     </div>
   );

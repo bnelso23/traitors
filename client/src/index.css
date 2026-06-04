@@ -594,3 +594,221 @@ h1, h2, h3, h4, .font-serif {
   font-family: var(--font-serif);
   font-weight: bold;
 }
+
+/* ==========================================================================
+   CASTLE PORTRAIT GALLERY WALL
+   A premium, museum-like gallery experience with wood & gold frames.
+   ========================================================================== */
+
+.gallery-wall {
+  background-color: #1c0e0e;
+  background-image: 
+    radial-gradient(circle at 50% 30%, #3a1515 0%, #0d0505 100%),
+    repeating-linear-gradient(45deg, rgba(0, 0, 0, 0.15) 0px, rgba(0, 0, 0, 0.15) 1px, transparent 1px, transparent 8px);
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+}
+
+.gallery-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 28px;
+  width: 100%;
+  max-width: 460px;
+  margin: 0 auto;
+  padding-bottom: 40px;
+}
+
+.painting-card-wrapper {
+  perspective: 1000px;
+  cursor: pointer;
+  width: calc(50% - 14px); /* 2 items per row on mobile */
+  min-width: 150px;
+}
+
+@media (max-width: 360px) {
+  .painting-card-wrapper {
+    width: 100%; /* Single column on tiny screens */
+  }
+}
+
+.painting-frame {
+  background-color: #f5eedb; /* Cream mat board */
+  border: 10px solid #2d1b0c; /* Heavy walnut wood frame */
+  box-shadow: 
+    0 10px 20px rgba(0, 0, 0, 0.6),
+    inset 0 0 10px rgba(0, 0, 0, 0.8),
+    0 0 0 1px var(--gold-dark),
+    0 0 0 3px #1a0f07;
+  padding: 10px 10px 14px 10px;
+  border-radius: 2px;
+  transition: var(--transition-smooth);
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  border-style: ridge;
+}
+
+.painting-frame:hover {
+  transform: translateY(-4px) rotate(1deg);
+  box-shadow: 
+    0 15px 30px rgba(197, 160, 40, 0.25),
+    inset 0 0 10px rgba(0, 0, 0, 0.8),
+    0 0 0 1px var(--gold-glow),
+    0 0 0 3px #1a0f07;
+}
+
+.painting-mat {
+  background: #fdfaf0;
+  padding: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: inset 0 0 5px rgba(0,0,0,0.05);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  flex: 1;
+}
+
+.painting-image {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  border: 1px solid #111;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+}
+
+.painting-placard {
+  background: linear-gradient(135deg, #dfc05d 0%, #ab8f2e 100%);
+  border: 1px solid #6c5412;
+  color: #1a0902;
+  box-shadow: 
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    0 2px 4px rgba(0,0,0,0.25);
+  border-radius: 1px;
+  padding: 4px 6px;
+  margin-top: 10px;
+  text-align: center;
+  width: 90%;
+  font-family: var(--font-serif);
+  line-height: 1.2;
+}
+
+.placard-title {
+  font-size: 0.6rem;
+  font-weight: bold;
+  letter-spacing: 0.02em;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.placard-artist {
+  font-size: 0.5rem;
+  opacity: 0.8;
+  margin-top: 1px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+/* Enlarged Modal Layout */
+.gallery-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(6, 5, 8, 0.95);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+  padding: 20px;
+}
+
+.gallery-close-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: var(--border-dark);
+  color: var(--text-primary);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  z-index: 1200;
+}
+
+.gallery-close-btn:hover {
+  background: var(--crimson-dark);
+  color: var(--crimson-glow);
+  border-color: var(--crimson);
+}
+
+.frame-enlarged {
+  border-width: 14px;
+  max-width: 90vw;
+  width: 400px;
+  padding: 16px 16px 20px 16px;
+  border-style: ridge;
+}
+
+.mat-enlarged {
+  padding: 12px;
+}
+
+.placard-enlarged {
+  width: 100%;
+  padding: 8px 12px;
+  margin-top: 14px;
+}
+
+.placard-title-large {
+  font-size: 0.85rem;
+  font-weight: bold;
+  font-style: italic;
+  letter-spacing: 0.02em;
+  color: #1a0902;
+  text-align: center;
+}
+
+.placard-artist-large {
+  font-size: 0.65rem;
+  opacity: 0.9;
+  margin-top: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #1a0902;
+  text-align: center;
+  font-weight: bold;
+}
+
+@keyframes scaleUp {
+  from {
+    opacity: 0;
+    transform: scale(0.9) rotate(-1deg);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
