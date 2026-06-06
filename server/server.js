@@ -682,6 +682,25 @@ io.on('connection', (socket) => {
     });
   });
 
+  // Update a single player's role at any point
+  socket.on('gmUpdatePlayerRole', async ({ playerId, role }) => {
+    if (socket.userId !== 'gm') return;
+    const state = getState();
+    const player = state.players.find(p => p.id === playerId);
+    if (!player) return;
+
+    player.role = role;
+    await saveState();
+    broadcastState();
+
+    // Send push notification to target player
+    notifier.sendPushNotification(playerId, {
+      title: 'Your Identity Has Shifted',
+      body: `You are now ${role === 'TRAITOR' ? 'a TRAITOR' : 'a FAITHFUL'}.`,
+      tag: 'role-assignment'
+    });
+  });
+
   // Toggle chat permissions
   socket.on('gmToggleChats', async ({ chatsEnabled, privateChatsEnabled, traitorsChatEnabled }) => {
     if (socket.userId !== 'gm') return;

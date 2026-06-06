@@ -14,7 +14,7 @@
       "id": "p1",
       "name": "Hayli",
       "pin": "4820",
-      "role": "FAITHFUL",
+      "role": "TRAITOR",
       "status": "ALIVE",
       "shielded": false,
       "sessionToken": "9f60ef5223e52affa4c2d2307f0de551"
@@ -31,7 +31,7 @@
       "id": "p3",
       "name": "Alix",
       "pin": "8175",
-      "role": "FAITHFUL",
+      "role": "TRAITOR",
       "status": "ALIVE",
       "shielded": false
     },
@@ -39,7 +39,7 @@
       "id": "p4",
       "name": "Tanner",
       "pin": "2953",
-      "role": "FAITHFUL",
+      "role": "TRAITOR",
       "status": "ALIVE",
       "shielded": false
     },
@@ -252,5 +252,5 @@
     "claimed": true,
     "claimedBy": "p1"
   },
-  "gmSessionToken": "0eac01c2451f1abc894b5e64b5900112"
+  "gmSessionToken": "542db1b01c3f4018037f9209b349c90e"
 }

@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Shield, MessageSquare, Award, Volume2, Key, HelpCircle, User, Users, Lock, ChevronRight, Check, Bell } from 'lucide-react';
+import { Shield, MessageSquare, Award, Volume2, Key, HelpCircle, User, Users, Lock, ChevronRight, Check, Bell, Eye, EyeOff } from 'lucide-react';
 import PlayerAvatar from './PlayerAvatar';
 
 function PlayerDashboard({ gameState, emitSocket, initialTab = 'dashboard', onNavigateChat }) {
   const [tab, setTab] = useState(initialTab);
+  const [revealRole, setRevealRole] = useState(false);
   const [activeChannel, setActiveChannel] = useState('global'); // global, traitors, graveyard, private-pX
   const [selectedPmPlayer, setSelectedPmPlayer] = useState(null); // player object for DM
   const [chatText, setChatText] = useState('');
@@ -101,41 +102,75 @@ function PlayerDashboard({ gameState, emitSocket, initialTab = 'dashboard', onNa
           
           {/* Identity Box */}
           <div 
-            className={`gothic-panel ${isTraitor && isAlive ? 'gothic-panel-crimson crimson-glow' : 'candle-glow'}`}
-            style={{ textAlign: 'center' }}
+            className={`gothic-panel ${(isTraitor && isAlive && revealRole) ? 'gothic-panel-crimson crimson-glow' : 'candle-glow'}`}
+            style={{ textAlign: 'center', transition: 'var(--transition-smooth)' }}
           >
             <PlayerAvatar 
               name={clientPlayer.name}
               avatarUrl={clientPlayer.avatarUrl}
               fallbackType="shield"
               shieldSize={36}
-              shieldClassName={isTraitor && isAlive ? 'text-crimson' : 'text-gold'}
+              shieldClassName={(isTraitor && isAlive && revealRole) ? 'text-crimson' : 'text-gold'}
               shieldStyle={{ margin: '0 auto 10px', display: 'block', animation: 'flicker 4s infinite alternate' }}
               containerStyle={{
                 width: '80px',
                 height: '80px',
                 borderRadius: '50%',
-                border: isTraitor && isAlive ? '2px solid var(--crimson)' : '2px solid var(--gold)',
+                border: (isTraitor && isAlive && revealRole) ? '2px solid var(--crimson)' : '2px solid var(--gold)',
                 margin: '0 auto 12px',
-                boxShadow: isTraitor && isAlive ? 'var(--shadow-crimson)' : 'var(--shadow-candle)',
+                boxShadow: (isTraitor && isAlive && revealRole) ? 'var(--shadow-crimson)' : 'var(--shadow-candle)',
                 animation: 'flicker 4s infinite alternate ease-in-out'
               }}
             />
             <h3 style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Your Secret Order</h3>
-            <h2 style={{ fontSize: '1.4rem', letterSpacing: '0.15em', marginTop: '4px' }}>
-              {gameState.gameStatus === 'LOBBY' ? 'IDENTITY SECURED' : (isAlive ? clientPlayer.role : 'ELIMINATED')}
+            <h2 style={{ fontSize: '1.4rem', letterSpacing: '0.15em', marginTop: '4px', fontFamily: 'var(--font-serif)', color: (isAlive && revealRole) ? (isTraitor ? 'var(--crimson-glow)' : 'var(--gold-glow)') : 'var(--text-muted)' }}>
+              {gameState.gameStatus === 'LOBBY' ? 'IDENTITY SECURED' : (isAlive ? (revealRole ? clientPlayer.role : 'IDENTITY SEALED') : 'ELIMINATED')}
             </h2>
-            <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '8px', fontStyle: 'italic' }}>
+            <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '8px', fontStyle: 'italic', minHeight: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               {gameState.gameStatus === 'LOBBY' ? (
                 'Wait in the lounge. The Game Master will seal your identity shortly.'
               ) : isAlive ? (
-                isTraitor 
-                  ? 'Murder Faithfuls in the dark. Form alliances. Do not get caught.' 
-                  : 'Root out the Traitors. Keep your eyes open. Vote wisely.'
+                revealRole ? (
+                  isTraitor 
+                    ? 'Murder Faithfuls in the dark. Form alliances. Do not get caught.' 
+                    : 'Root out the Traitors. Keep your eyes open. Vote wisely.'
+                ) : (
+                  '🔒 Hold the button below to temporarily reveal your secret role. Keep it hidden from others.'
+                )
               ) : (
                 'You have met your demise. You can no longer speak with the living, only whisper in the Graveyard.'
               )}
             </p>
+
+            {isAlive && gameState.gameStatus !== 'LOBBY' && (
+              <div style={{ display: 'flex', justifyContent: 'center', marginTop: '12px', marginBottom: '4px' }}>
+                <button
+                  onMouseDown={() => setRevealRole(true)}
+                  onMouseUp={() => setRevealRole(false)}
+                  onMouseLeave={() => setRevealRole(false)}
+                  onTouchStart={(e) => { e.preventDefault(); setRevealRole(true); }}
+                  onTouchEnd={(e) => { e.preventDefault(); setRevealRole(false); }}
+                  className="gothic-btn"
+                  style={{
+                    padding: '8px 16px',
+                    fontSize: '0.75rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    userSelect: 'none',
+                    cursor: 'pointer',
+                    background: revealRole ? 'var(--bg-primary)' : 'linear-gradient(135deg, #181513 0%, #201b17 100%)',
+                    borderColor: revealRole ? (isTraitor ? 'var(--crimson)' : 'var(--gold)') : 'var(--border-color, rgba(197, 160, 40, 0.3))',
+                    boxShadow: revealRole ? (isTraitor ? '0 0 10px rgba(138, 19, 19, 0.4)' : '0 0 10px rgba(197, 160, 40, 0.4)') : 'none',
+                    transition: 'var(--transition-fast)'
+                  }}
+                >
+                  {revealRole ? <EyeOff size={14} className={isTraitor ? 'text-crimson' : 'text-gold'} /> : <Eye size={14} />}
+                  {revealRole ? 'Release to Hide' : 'Hold to Reveal'}
+                </button>
+              </div>
+            )}
+
             {clientPlayer.shielded && isAlive && (
               <div 
                 style={{

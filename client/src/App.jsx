@@ -474,7 +474,7 @@ function App() {
               </span>
               {gameState?.clientPlayer && (
                 <span style={{ fontSize: '0.6rem', fontWeight: 'bold' }} className={gameState.clientPlayer.status === 'DEAD' ? 'text-crimson' : 'text-gold'}>
-                  {gameState.clientPlayer.status === 'DEAD' ? 'DEAD' : (gameState.clientPlayer.role !== 'UNKNOWN' ? gameState.clientPlayer.role : 'ALIVE')}
+                  {gameState.clientPlayer.status === 'DEAD' ? 'DEAD' : 'ALIVE'}
                 </span>
               )}
             </div>

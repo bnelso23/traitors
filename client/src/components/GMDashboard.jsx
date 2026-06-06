@@ -428,6 +428,27 @@ function GMDashboard({ gameState, emitSocket }) {
                             🛡️ {p.shielded ? 'Remove' : 'Shield'}
                           </button>
                         )}
+                        {isAlive && (
+                          <button
+                            onClick={() => {
+                              const newRole = isTraitor ? 'FAITHFUL' : 'TRAITOR';
+                              if (window.confirm(`Are you sure you want to change ${p.name}'s role to ${newRole}?`)) {
+                                emitSocket('gmUpdatePlayerRole', { playerId: p.id, role: newRole });
+                              }
+                            }}
+                            className="gothic-btn"
+                            style={{ 
+                              padding: '6px 10px', 
+                              fontSize: '0.65rem', 
+                              height: 'fit-content', 
+                              borderRadius: '4px',
+                              border: isTraitor ? '1px solid var(--crimson)' : 'var(--border-dark)',
+                              background: isTraitor ? 'rgba(138, 19, 19, 0.15)' : 'rgba(25, 24, 29, 0.6)'
+                            }}
+                          >
+                            🎭 {isTraitor ? 'Faithful' : 'Traitor'}
+                          </button>
+                        )}
                         <button
                           onClick={() => {
                             if (isAlive && p.shielded && !window.confirm("WARNING: This player is shielded from murder! Are you sure you want to manually eliminate them?")) {
