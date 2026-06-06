@@ -758,7 +758,7 @@ function GMDashboard({ gameState, emitSocket }) {
 
       {/* SECTION: GALLERY VIEW */}
       {activeSection === 'gallery' && (
-        <GalleryView />
+        <GalleryView gameState={gameState} emitSocket={emitSocket} user={{ id: 'gm', role: 'GM' }} />
       )}
 
       {/* DANGER ZONE RESET BUTTON */}

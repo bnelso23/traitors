@@ -443,6 +443,10 @@ function getFilteredState(userId) {
     players: filteredPlayers,
     messages: filteredMessages,
     groups: filteredGroups,
+    galleryShield: state.galleryShield ? {
+      claimed: !!state.galleryShield.claimed,
+      claimedBy: state.galleryShield.claimed ? state.galleryShield.claimedBy : null
+    } : null,
     clientPlayer: {
       id: clientPlayer.id,
       name: clientPlayer.name,
@@ -1080,6 +1084,61 @@ io.on('connection', (socket) => {
         });
       }
     });
+  });
+
+  // GM hides a Sacred Shield behind a painting
+  socket.on('gmHideGalleryShield', async ({ paintingId }) => {
+    if (socket.userId !== 'gm') return;
+    const state = getState();
+    
+    if (!state.galleryShield) {
+      state.galleryShield = {};
+    }
+    
+    state.galleryShield.hiddenPaintingId = paintingId;
+    state.galleryShield.claimed = false;
+    state.galleryShield.claimedBy = null;
+
+    await saveState();
+    broadcastState();
+  });
+
+  // Player claims a hidden gallery shield
+  socket.on('claimGalleryShield', async ({ paintingId }) => {
+    const state = getState();
+    const userId = socket.userId;
+    if (!userId || userId === 'gm') return;
+
+    const player = state.players.find(p => p.id === userId);
+    if (!player || player.status !== 'ALIVE') return;
+
+    if (!state.galleryShield || !state.galleryShield.hiddenPaintingId) {
+      return socket.emit('galleryShieldResult', { success: false, error: 'No shield is hidden.' });
+    }
+
+    if (state.galleryShield.claimed) {
+      return socket.emit('galleryShieldResult', { success: false, error: 'The shield has already been claimed.' });
+    }
+
+    if (state.galleryShield.hiddenPaintingId === paintingId) {
+      state.galleryShield.claimed = true;
+      state.galleryShield.claimedBy = userId;
+      player.shielded = true;
+      await saveState();
+      broadcastState();
+
+      // Send private success socket event to trigger local client animation
+      socket.emit('galleryShieldResult', { success: true, paintingId });
+
+      // Trigger push notification to targeted player
+      notifier.sendPushNotification(userId, {
+        title: 'Sacred Shield Discovered!',
+        body: 'You found the hidden shield in the Gallery! You are protected from Traitor murder tonight.',
+        tag: 'shield-status'
+      });
+    } else {
+      socket.emit('galleryShieldResult', { success: false, error: 'Nothing is hidden behind this portrait.' });
+    }
   });
 
   // Disconnection handler

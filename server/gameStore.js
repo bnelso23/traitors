@@ -4,7 +4,7 @@ const path = require('path');
 
 const defaultState = {
   roomCode: 'TRAITORS',
-  gmPin: '9999', // GM PIN to login
+  gmPin: '8347', // GM PIN to login
   gameStatus: 'LOBBY', // LOBBY, ACTIVE, ENDED
   chatsEnabled: true,
   privateChatsEnabled: true,
@@ -14,21 +14,26 @@ const defaultState = {
   votingOptions: [], // Array of playerIds
   votes: {}, // voterId -> votedId
   players: [
-    { id: 'p1', name: 'Hayli', pin: '1001', role: 'UNKNOWN', status: 'ALIVE', shielded: false },
-    { id: 'p2', name: 'Jen', pin: '1002', role: 'UNKNOWN', status: 'ALIVE', shielded: false },
-    { id: 'p3', name: 'Alix', pin: '1003', role: 'UNKNOWN', status: 'ALIVE', shielded: false },
-    { id: 'p4', name: 'Tanner', pin: '1004', role: 'UNKNOWN', status: 'ALIVE', shielded: false },
-    { id: 'p5', name: 'Bryce', pin: '1005', role: 'UNKNOWN', status: 'ALIVE', shielded: false },
-    { id: 'p6', name: 'Kelsie', pin: '1006', role: 'UNKNOWN', status: 'ALIVE', shielded: false },
-    { id: 'p7', name: 'Alyssa', pin: '1007', role: 'UNKNOWN', status: 'ALIVE', shielded: false },
-    { id: 'p8', name: 'Naeim', pin: '1008', role: 'UNKNOWN', status: 'ALIVE', shielded: false },
-    { id: 'p9', name: 'Matt', pin: '1009', role: 'UNKNOWN', status: 'ALIVE', shielded: false },
-    { id: 'p10', name: 'Allyson', pin: '1010', role: 'UNKNOWN', status: 'ALIVE', shielded: false },
-    { id: 'p11', name: 'Sarah', pin: '1011', role: 'UNKNOWN', status: 'ALIVE', shielded: false },
-    { id: 'p12', name: 'Derek', pin: '1012', role: 'UNKNOWN', status: 'ALIVE', shielded: false }
+    { id: 'p1', name: 'Hayli', pin: '4820', role: 'UNKNOWN', status: 'ALIVE', shielded: false },
+    { id: 'p2', name: 'Jen', pin: '6394', role: 'UNKNOWN', status: 'ALIVE', shielded: false },
+    { id: 'p3', name: 'Alix', pin: '8175', role: 'UNKNOWN', status: 'ALIVE', shielded: false },
+    { id: 'p4', name: 'Tanner', pin: '2953', role: 'UNKNOWN', status: 'ALIVE', shielded: false },
+    { id: 'p5', name: 'Bryce', pin: '7041', role: 'UNKNOWN', status: 'ALIVE', shielded: false },
+    { id: 'p6', name: 'Kelsie', pin: '5826', role: 'UNKNOWN', status: 'ALIVE', shielded: false },
+    { id: 'p7', name: 'Alyssa', pin: '1938', role: 'UNKNOWN', status: 'ALIVE', shielded: false },
+    { id: 'p8', name: 'Naeim', pin: '9407', role: 'UNKNOWN', status: 'ALIVE', shielded: false },
+    { id: 'p9', name: 'Matt', pin: '3762', role: 'UNKNOWN', status: 'ALIVE', shielded: false },
+    { id: 'p10', name: 'Allyson', pin: '5284', role: 'UNKNOWN', status: 'ALIVE', shielded: false },
+    { id: 'p11', name: 'Sarah', pin: '8619', role: 'UNKNOWN', status: 'ALIVE', shielded: false },
+    { id: 'p12', name: 'Derek', pin: '4503', role: 'UNKNOWN', status: 'ALIVE', shielded: false }
   ],
   messages: [], // Array of { id, senderId, senderName, channelId, text, timestamp }
-  groups: [] // Array of { id, name, memberIds, creatorId }
+  groups: [], // Array of { id, name, memberIds, creatorId }
+  galleryShield: {
+    hiddenPaintingId: null,
+    claimed: false,
+    claimedBy: null
+  }
 };
 
 let localState = { ...defaultState };

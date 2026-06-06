@@ -84,6 +84,28 @@ export const playSound = (type) => {
       
       osc.start();
       osc.stop(audioCtx.currentTime + 1.9);
+    } else if (type === 'success') {
+      // Golden shimmering polyphonic chime sequence
+      const playTone = (freq, startTime, duration, vol = 0.15) => {
+        const osc = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, startTime);
+        osc.frequency.linearRampToValueAtTime(freq * 1.01, startTime + duration);
+        gainNode.gain.setValueAtTime(vol, startTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+        osc.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        osc.start(startTime);
+        osc.stop(startTime + duration + 0.1);
+      };
+      
+      const now = audioCtx.currentTime;
+      playTone(523.25, now, 0.8, 0.1); // C5
+      playTone(659.25, now + 0.12, 0.8, 0.1); // E5
+      playTone(783.99, now + 0.24, 0.8, 0.1); // G5
+      playTone(1046.50, now + 0.36, 1.2, 0.15); // C6
+      playTone(1318.51, now + 0.48, 1.0, 0.08); // E6
     }
   } catch (err) {
     console.error('Failed to play synthesized sound:', err);
@@ -206,6 +228,13 @@ function App() {
       if (user.role === 'GM') {
         window.dispatchEvent(new CustomEvent('traitors_voting_results', { detail: results }));
       }
+    });
+
+    socket.on('galleryShieldResult', (result) => {
+      if (result.success) {
+        playSound('success');
+      }
+      window.dispatchEvent(new CustomEvent('traitors_gallery_shield_result', { detail: result }));
     });
 
     // Watch for navigation postMessage from service worker
@@ -507,7 +536,7 @@ function App() {
                   />
                 )}
                 {activeTab === 'gallery' && (
-                  <GalleryView />
+                  <GalleryView gameState={gameState} emitSocket={emitSocket} user={user} />
                 )}
               </>
             ) : (
